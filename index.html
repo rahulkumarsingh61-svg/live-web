@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Nexus AI — Live Web, Code & Full Sports Scorecards</title>
+  <title>Nexus AI — Live Web, Code & Sports Intelligence</title>
   <style>
     :root {
       --bg: #070b14;
@@ -678,7 +678,7 @@
         </div>
       </div>
       <div class="controls">
-        <button id="sportsToggle" class="pill-toggle" title="Force Flashscore + Cricbuzz/Cricinfo Live Sports">🏏 Live Sports</button>
+        <button id="sportsToggle" class="pill-toggle" title="Force Sports Scorecard Mode">🏏 Live Sports</button>
         <select id="sportSelect" title="Select Specific Sport">
           <option value="auto" selected>Auto Sport</option>
           <option value="cricket">Cricket</option>
@@ -701,7 +701,7 @@
 
     <div class="input-area">
       <form class="input-box" id="chatForm">
-        <input type="text" id="promptInput" placeholder="Ask about scores, wickets, overs, runs needed, lineups, code, or the web..." autocomplete="off" required />
+        <input type="text" id="promptInput" placeholder="Ask about live scores, wickets, overs, code, or anything on the web..." autocomplete="off" required />
         <button type="button" id="micBtn" title="Voice Input">🎤</button>
         <button type="submit" id="sendBtn">Ask AI</button>
       </form>
@@ -983,9 +983,9 @@
             <p>Full <strong>Cricket &amp; Sports Scorecards</strong> (runs, wickets, overs, runs needed, batting/bowling cards, lineups, stats &amp; tables), <strong>Code Generator with Copy Buttons</strong>, and <strong>Live Web AI</strong>.</p>
             <div class="suggestions">
               <button class="suggestion-btn" onclick="quickAsk('Western Australia vs Tasmania full scorecard, wickets, overs, batting and runs needed')">🏏 WA vs Tasmania Full Scorecard</button>
-              <button class="suggestion-btn" onclick="quickAsk('South Australia vs Victoria live cricket score, wickets, overs and batting details')">🏏 SA vs Victoria Scorecard</button>
               <button class="suggestion-btn" onclick="quickAsk('Premier League standings, top scorers, and upcoming fixtures')">⚽ Premier League Table & Scores</button>
-              <button class="suggestion-btn" onclick="quickAsk('Write a Python script to fetch live cricket scores from an API')">💻 Python API Code Example</button>
+              <button class="suggestion-btn" onclick="quickAsk('Write a Python function using requests to fetch live cricket scores from a REST API')">💻 Python API Code Example</button>
+              <button class="suggestion-btn" onclick="quickAsk('ATP and WTA tennis rankings')">🎾 ATP / WTA Rankings</button>
             </div>
           </div>
         `;
@@ -1175,7 +1175,13 @@
       return el;
     }
 
+    // Detect coding/programming queries so they NEVER misroute into Flashscore sports API
+    function isCodingQuery(query) {
+      return /\b(python|javascript|js|typescript|ts|html|css|java|c\+\+|c#|php|ruby|golang|rust|sql|bash|script|function|code|coding|program|algorithm|regex|json|fetch|axios|requests|curl|api endpoint|convert that|rewrite|debug|syntax|loop|array|object|class|component|react|node|flask)\b/i.test(query);
+    }
+
     function detectSportsQuery(query) {
+      if (isCodingQuery(query) && !sportsMode) return false;
       if (sportsMode || sportSelect.value !== "auto") return true;
       return /\b(cricket|football|soccer|ipl|t20|odi|test|score|scores|scorecard|match|matches|fixture|fixtures|standings|points table|table|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|world cup|bbl|psl|bpl|cricbuzz|flashscore|espncricinfo|tennis|atp|wta|rankings|basketball|nba|hockey|nhl|f1|formula 1|kabaddi|pkl|badminton|bwf|golf|ufc|boxing|vs|versus|batting|bowling|wickets|wicket|overs|over|runs|needed|target|trail|lead|innings|goals|halftime|fulltime|lineup|lineups|stats|statistics|squad|transfer|transfers|injury|injuries|odds|h2h|head to head|commentary|top scorers|ind|nz|aus|eng|pak|sa|sl|ban|wi|afg|virat|rohit|bumrah|messi|ronaldo|mbappe|haaland|real madrid|barcelona|arsenal|liverpool|chelsea|manchester|bayern|psg|sheffield shield|western australia|tasmania|south australia|victoria)\b/i.test(query);
     }
@@ -1393,7 +1399,6 @@
       const cards = [];
       const contextChunks = [];
       let foundSpecificEntityMatch = false;
-      let hasGranularCricketScorecard = false;
 
       // A. Rankings (ATP / WTA)
       if (/\b(rankings|ranking|atp|wta)\b/.test(q)) {
@@ -1626,11 +1631,10 @@
       const wantsDeepScorecard = /\b(scorecard|detail|details|stat|stats|statistics|summary|lineup|lineups|commentary|h2h|odds|wickets|wicket|overs|over|runs|needed|target|batting|bowling)\b/.test(q);
 
       if (topMatches.length > 0 && topMatches[0].id && (foundSpecificEntityMatch || wantsDeepScorecard)) {
-        statusEl.querySelector("span").textContent = `Loading detailed scorecard & stats for ${topMatches[0].name}...`;
+        statusEl.querySelector("span").textContent = `Loading Flashscore match summary for ${topMatches[0].name}...`;
         const deepInfo = await enrichMatchById(topMatches[0].id, userQuery, headers, topMatches[0].availableTabs);
-        if (deepInfo && deepInfo.length > 180) {
+        if (deepInfo) {
           topMatches[0].text += `\n${deepInfo}`;
-          hasGranularCricketScorecard = true;
         }
       }
 
@@ -1642,15 +1646,13 @@
         );
       }
 
-      // F. Automatic Full Cricket/Sports Scorecard Enrichment via Cricbuzz & ESPNcricinfo
-      // Triggers whenever:
-      // 1) User asks for wickets, overs, runs needed, batting/bowling, or full scorecard AND Flashscore didn't have ball-by-ball details
-      // 2) Or user asked for a specific team/series that Flashscore didn't return
-      const needsRichScorecardBackup =
-        (sport === "cricket" && wantsDeepScorecard && !hasGranularCricketScorecard) ||
+      // F. ALWAYS fetch Cricbuzz & ESPNcricinfo full scorecard details when user asks for
+      // wickets, overs, runs needed, batting/bowling, or full scorecard (or when Flashscore missed a series)
+      const shouldFetchCricketScorecardWeb =
+        (sport === "cricket" && wantsDeepScorecard) ||
         (searchTerms.length > 0 && !foundSpecificEntityMatch);
 
-      if (needsRichScorecardBackup) {
+      if (shouldFetchCricketScorecardWeb) {
         statusEl.querySelector("span").textContent = `Fetching full wickets, overs, batting & bowling scorecard from Cricbuzz & ESPNcricinfo...`;
         try {
           const targetedQuery = topMatches.length && foundSpecificEntityMatch
@@ -1664,7 +1666,7 @@
           const webSports = await searchLangSearch(targetedQuery, "oneWeek", scorecardDomains);
           if (webSports.length) {
             const webSnippetBlock = webSports.slice(0, 4).map((r) => {
-              const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 1300);
+              const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 1400);
               finalCards.unshift({
                 name: r.name,
                 sub: "Live Full Scorecard",
@@ -1672,7 +1674,7 @@
               });
               return `• **${r.name}**\n  ${body}`;
             }).join("\n\n");
-            contextChunks.unshift(`**Full Live Scorecard, Wickets, Overs & Batting/Bowling Details:**\n\n${webSnippetBlock}`);
+            contextChunks.unshift(`**Full Scorecard, Wickets, Overs, Runs Needed & Batting/Bowling Details:**\n\n${webSnippetBlock}`);
           }
         } catch (_) {}
       }
@@ -1715,67 +1717,39 @@
       return data?.data?.webPages?.value || [];
     }
 
-    async function generateGroundedAnswer(userQuery, payloadData, isSports, recentHistory = []) {
-      let context = "";
-      if (isSports) {
-        context = payloadData.contextText;
-        if (!context) {
-          return `No matching **${payloadData.sport}** fixtures, results, or stats were returned right now. Try specifying a team, tournament, or sport name.`;
-        }
-      } else {
-        const results = payloadData;
-        if (!results.length) {
-          return "No live web results were found for that query. Try switching the time filter to **Any Time**.";
-        }
-        context = results.map((r, i) => {
-          const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 950);
-          return `[${i + 1}] ${r.name}: ${body}`;
-        }).join("\n");
+    // Multi-model LLM call so coding, follow-ups, and scorecards synthesize reliably without raw snippet dumps
+    async function callFreeLLM(messages, maxChars = 6500) {
+      const models = ["openai", "mistral", "searchgpt"];
+
+      for (const modelName of models) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 14000);
+          const res = await fetch("https://text.pollinations.ai/openai", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            signal: controller.signal,
+            body: JSON.stringify({
+              model: modelName,
+              messages
+            })
+          });
+          clearTimeout(timer);
+
+          if (res.ok) {
+            const json = await res.json();
+            const reply = json?.choices?.[0]?.message?.content?.trim();
+            if (reply && !reply.startsWith("<!DOCTYPE")) return reply;
+          }
+        } catch (_) {}
       }
 
-      const systemPrompt = isSports
-        ? "You are Nexus AI, an expert live sports & cricket scorecard analyst. Using ONLY the provided Flashscore & live scorecard data, present a complete, crystal-clear scorecard breakdown including:\n" +
-          "1. **Match Summary & Status** (exact runs, wickets fallen, overs bowled, lead/trail, target & runs needed to win, current day/session).\n" +
-          "2. **Batting & Bowling Highlights** (top batters with runs/balls, top bowlers with wickets/overs, and fall of wickets if present in the data).\n" +
-          "3. **Other Active Matches / Standings / Stats** if provided.\n" +
-          "Use clean bullet points and **bold** headings. Never cut off mid-sentence."
-        : "You are Nexus AI, a live web search & coding assistant. Answer clearly and completely using the provided live search results (and your coding knowledge when asked to write code). Wrap all code snippets in triple backticks ```language so the user gets a copy button. Use clean bullet points and **bold** highlights.";
-
-      const historyMessages = recentHistory.slice(-4).map(m => ({
-        role: m.role === "ai" ? "assistant" : "user",
-        content: m.text.slice(0, 800)
-      }));
-
+      // Final GET fallback
       try {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 16000);
-        const res = await fetch("[https://text.pollinations.ai/openai](https://text.pollinations.ai/openai)", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: controller.signal,
-          body: JSON.stringify({
-            model: "openai",
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...historyMessages,
-              { role: "user", content: `Question: ${userQuery}\n\nData:\n${context.slice(0, 6500)}` }
-            ]
-          })
-        });
-        clearTimeout(timer);
-
-        if (res.ok) {
-          const json = await res.json();
-          const reply = json?.choices?.[0]?.message?.content?.trim();
-          if (reply) return reply;
-        }
-      } catch (_) {}
-
-      try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 14000);
-        const shortPrompt = `${systemPrompt}\n\nQuestion: ${userQuery}\n\nData:\n${context.slice(0, 2400)}`;
-        const getRes = await fetch(`[https://text.pollinations.ai/$](https://text.pollinations.ai/$){encodeURIComponent(shortPrompt)}`, {
+        const timer = setTimeout(() => controller.abort(), 13000);
+        const combinedPrompt = messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n").slice(0, 2400);
+        const getRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}`, {
           signal: controller.signal
         });
         clearTimeout(timer);
@@ -1785,15 +1759,65 @@
         }
       } catch (_) {}
 
+      return null;
+    }
+
+    async function generateGroundedAnswer(userQuery, payloadData, isSports, recentHistory = []) {
+      const coding = isCodingQuery(userQuery);
+      let context = "";
+
+      if (isSports) {
+        context = payloadData.contextText;
+        if (!context) {
+          return `No matching **${payloadData.sport}** fixtures, results, or stats were returned right now. Try specifying a team, tournament, or sport name.`;
+        }
+      } else if (!coding && Array.isArray(payloadData) && payloadData.length) {
+        context = payloadData.map((r, i) => {
+          const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 950);
+          return `[${i + 1}] ${r.name}: ${body}`;
+        }).join("\n");
+      }
+
+      const systemPrompt = isSports
+        ? "You are Nexus AI, an expert live sports & cricket scorecard analyst. Using ONLY the provided Flashscore & Cricbuzz/ESPNcricinfo data, present a complete, crystal-clear scorecard breakdown including:\n" +
+          "1. **Match Summary & Status** (exact runs, wickets fallen, overs bowled, lead/trail, target & runs needed to win, current day/session).\n" +
+          "2. **Batting & Bowling Highlights** (top batters with runs/balls, top bowlers with wickets/overs, and fall of wickets if present in the data).\n" +
+          "3. **Other Active Matches / Standings / Stats** if provided.\n" +
+          "Use clean bullet points and **bold** headings. Never cut off mid-sentence."
+        : coding
+        ? "You are Nexus AI, an expert software engineer. Write clean, complete, ready-to-run code answering the user's request (and use prior conversation context if converting or updating previous code). Always wrap code in triple backticks with the language name (e.g. ```python or ```javascript) so the UI renders a Copy button."
+        : "You are Nexus AI, a live web search & conversational assistant. Answer clearly and completely using the provided live search results (when applicable) and conversation history. Wrap any code snippets in triple backticks ```language. Use clean bullet points and **bold** highlights.";
+
+      const historyMessages = recentHistory.slice(-6).map(m => ({
+        role: m.role === "ai" ? "assistant" : "user",
+        content: m.text.slice(0, 1400)
+      }));
+
+      const userContent = context
+        ? `Question: ${userQuery}\n\nLive Data:\n${context.slice(0, 6500)}`
+        : userQuery;
+
+      const llmReply = await callFreeLLM([
+        { role: "system", content: systemPrompt },
+        ...historyMessages,
+        { role: "user", content: userContent }
+      ]);
+
+      if (llmReply) return llmReply;
+
       if (isSports) {
         return context.slice(0, 4500);
       }
 
-      return `**Live Web Results for "${userQuery}":**\n\n` +
-        payloadData.slice(0, 5).map(r => {
-          const clean = (r.snippet || r.text || "").replace(/\s+/g, " ").trim();
-          return `• **${r.name}**\n  ${clean}`;
-        }).join("\n\n");
+      if (Array.isArray(payloadData) && payloadData.length) {
+        return `**Live Web Results for "${userQuery}":**\n\n` +
+          payloadData.slice(0, 5).map(r => {
+            const clean = (r.snippet || r.text || "").replace(/\s+/g, " ").trim();
+            return `• **${r.name}**\n  ${clean}`;
+          }).join("\n\n");
+      }
+
+      return "⚠️ The AI synthesis service is temporarily busy. Please try sending your prompt again in a few seconds.";
     }
 
     chatForm.addEventListener("submit", async (e) => {
@@ -1819,20 +1843,17 @@
       renderSidebar();
       await appendMessageElement("user", query, [], false);
 
-      if (/^(hi|hello|hey|namaste|good morning|good evening|who are you|what is your name)[!?. ]*$/i.test(query)) {
-        const greetingReply = "Hello! I'm **Nexus AI**. Ask me anything about **live scores, wickets, overs, runs needed, full scorecards, lineups, standings, or fixtures** (powered by Flashscore + Cricbuzz/ESPNcricinfo), ask me to **write code** (with one-click copy buttons), or ask any **real-time web question** (powered by LangSearch).";
-        session.messages.push({ role: "ai", text: greetingReply, sources: [], isSports: false });
-        saveSessions();
-        await appendMessageElement("ai", greetingReply, [], true, false);
-        sendBtn.disabled = false;
-        promptInput.focus();
-        return;
-      }
-
+      const coding = isCodingQuery(query);
       const isSports = detectSportsQuery(query);
+      const isConversationalOnly = /^(hi|hello|hey|namaste|good morning|good evening|thanks|thank you|ok|okay|who are you|what is your name)[!?. ]*$/i.test(query);
+
       const statusEl = createStatus(
         isSports
-          ? "Fetching live scores & full scorecard data..."
+          ? "Fetching live scores, wickets, overs & full scorecard data..."
+          : coding
+          ? "Generating code solution..."
+          : isConversationalOnly
+          ? "Thinking..."
           : "Searching live web via LangSearch..."
       );
 
@@ -1849,6 +1870,8 @@
             url: c.url,
             sub: c.sub || ""
           }));
+        } else if (coding || isConversationalOnly) {
+          answer = await generateGroundedAnswer(query, [], false, priorHistory);
         } else {
           const webResults = await searchLangSearch(query);
           statusEl.querySelector("span").textContent = `Synthesizing ${webResults.length} web sources...`;
