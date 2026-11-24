@@ -372,7 +372,6 @@
       backdrop-filter: blur(10px);
     }
 
-    /* Message Footer Action Bar */
     .msg-actions {
       display: flex;
       gap: 8px;
@@ -716,7 +715,6 @@
     const FLASHSCORE_API_KEY = "ok_92db7785358099d92f49007ceb9d2de6";
     const FLASHSCORE_BASE_URL = "https://flashscore-scraper.omkar.cloud";
 
-    // Permanent stable storage key (never wiped by version bumps)
     const STORAGE_KEY = "nexus_ai_saved_chats";
 
     const sidebar = document.getElementById("sidebar");
@@ -793,7 +791,6 @@
       micBtn.style.display = "none";
     }
 
-    // Load & automatically rescue any sessions saved under older keys
     function loadAndMigrateSessions() {
       let current = [];
       try {
@@ -840,7 +837,6 @@
 
     function saveSessions() {
       try {
-        // Keep up to 40 sessions and trim oversized source payloads so localStorage never overflows
         const compact = sessions.slice(0, 40).map(s => ({
           id: s.id,
           title: s.title,
@@ -986,10 +982,10 @@
             <h1>Ask Anything, Grounded Live</h1>
             <p>Full <strong>Flashscore Sports Intelligence</strong> (scores, scorecards, lineups, player stats, H2H, odds, standings, squads &amp; news), <strong>Code Generator with Copy Buttons</strong>, and <strong>LangSearch Web AI</strong>.</p>
             <div class="suggestions">
-              <button class="suggestion-btn" onclick="quickAsk('India vs New Zealand 1st Test full scorecard and match status')">🏏 India vs NZ Scorecard</button>
-              <button class="suggestion-btn" onclick="quickAsk('Premier League standings, top scorers and live football matches')">⚽ Premier League Table & Scores</button>
+              <button class="suggestion-btn" onclick="quickAsk('Western Australia vs Tasmania Sheffield Shield full scorecard and details')">🏏 WA vs Tasmania Scorecard</button>
+              <button class="suggestion-btn" onclick="quickAsk('Premier League standings, top scorers, and upcoming fixtures')">⚽ Premier League Table & Scores</button>
+              <button class="suggestion-btn" onclick="quickAsk('Real Madrid squad, recent results, and upcoming matches')">🏟️ Real Madrid Squad & Fixtures</button>
               <button class="suggestion-btn" onclick="quickAsk('Write a Python script to fetch live cricket scores from an API')">💻 Python API Code Example</button>
-              <button class="suggestion-btn" onclick="quickAsk('ATP and WTA tennis rankings')">🎾 ATP / WTA Rankings</button>
             </div>
           </div>
         `;
@@ -1014,10 +1010,8 @@
         .replace(/>/g, "&gt;");
     }
 
-    // Rich Markdown + Fenced Code Block Renderer with One-Click Copy Button
     function renderRichMarkdown(rawText) {
       const codeBlocks = [];
-      // Extract fenced code blocks ```lang ... ``` before escaping HTML
       const withPlaceholders = String(rawText).replace(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g, (_, lang, code) => {
         const idx = codeBlocks.length;
         const cleanLang = (lang || "code").trim();
@@ -1031,7 +1025,6 @@
         .replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>")
         .replace(/`([^`]+)`/g, "<code style='background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:5px;color:#7dd3fc;'>$1</code>");
 
-      // Restore fenced code blocks with interactive Copy button
       html = html.replace(/@@CODE_BLOCK_(\d+)@@/g, (_, idxStr) => {
         const block = codeBlocks[Number(idxStr)];
         if (!block) return "";
@@ -1184,12 +1177,15 @@
 
     function detectSportsQuery(query) {
       if (sportsMode || sportSelect.value !== "auto") return true;
-      return /\b(cricket|football|soccer|ipl|t20|odi|test|score|scores|scorecard|match|matches|fixture|fixtures|standings|points table|table|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|world cup|bbl|psl|bpl|cricbuzz|flashscore|espncricinfo|tennis|atp|wta|rankings|basketball|nba|hockey|nhl|f1|formula 1|kabaddi|pkl|badminton|bwf|golf|ufc|boxing|vs|versus|batting|bowling|wickets|innings|goals|halftime|fulltime|lineup|lineups|stats|statistics|squad|transfer|transfers|injury|injuries|odds|h2h|head to head|commentary|top scorers|ind|nz|aus|eng|pak|sa|sl|ban|wi|afg|virat|rohit|bumrah|messi|ronaldo|mbappe|haaland|real madrid|barcelona|arsenal|liverpool|chelsea|manchester|bayern|psg)\b/i.test(query);
+      return /\b(cricket|football|soccer|ipl|t20|odi|test|score|scores|scorecard|match|matches|fixture|fixtures|standings|points table|table|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|world cup|bbl|psl|bpl|cricbuzz|flashscore|espncricinfo|tennis|atp|wta|rankings|basketball|nba|hockey|nhl|f1|formula 1|kabaddi|pkl|badminton|bwf|golf|ufc|boxing|vs|versus|batting|bowling|wickets|innings|goals|halftime|fulltime|lineup|lineups|stats|statistics|squad|transfer|transfers|injury|injuries|odds|h2h|head to head|commentary|top scorers|ind|nz|aus|eng|pak|sa|sl|ban|wi|afg|virat|rohit|bumrah|messi|ronaldo|mbappe|haaland|real madrid|barcelona|arsenal|liverpool|chelsea|manchester|bayern|psg|sheffield shield|western australia|tasmania|south australia|victoria)\b/i.test(query);
     }
 
     function detectSportType(query) {
       if (sportSelect.value !== "auto") return sportSelect.value;
       const q = query.toLowerCase();
+      if (/\b(cricket|ipl|t20|odi|test|sheffield shield|batting|bowling|wickets|innings|cricbuzz|espncricinfo|virat|rohit|bumrah|western australia|tasmania|south australia|victoria)\b/.test(q)) {
+        return "cricket";
+      }
       if (/\b(football|soccer|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|goals|halftime|arsenal|liverpool|chelsea|manchester|real madrid|barcelona|bayern|psg|juventus|inter|milan|messi|ronaldo|mbappe|haaland|xg)\b/.test(q)) {
         return "football";
       }
@@ -1218,6 +1214,88 @@
       }
     }
 
+    // FIX 1: Extract Flashscore 8-char ID from ent.id OR from ent.link URL path
+    function extractEntityId(ent) {
+      if (!ent) return null;
+      const directId = ent.id || ent.team_id || ent.player_id || ent.tournament_id || ent.match_id;
+      if (directId && String(directId).length >= 6) return String(directId);
+
+      if (ent.link) {
+        const parts = String(ent.link).split("/").filter(Boolean);
+        // Flashscore URLs end with the 8-char alphanumeric ID (e.g., /team/real-madrid/W8mj7MDD/)
+        for (let i = parts.length - 1; i >= 0; i--) {
+          if (/^[A-Za-z0-9]{8}$/.test(parts[i])) {
+            return parts[i];
+          }
+        }
+      }
+      return null;
+    }
+
+    // FIX 2: Cleanly strip null/empty values and format JSON into readable lines
+    function cleanJsonToReadable(obj, maxLines = 18) {
+      if (!obj) return "";
+      const lines = [];
+
+      function walk(node, prefix = "") {
+        if (lines.length >= maxLines || node === null || node === undefined || node === "") return;
+        if (Array.isArray(node)) {
+          node.slice(0, 12).forEach((item, idx) => {
+            if (typeof item === "object" && item !== null) {
+              const summaryParts = [];
+              for (const [k, v] of Object.entries(item)) {
+                if (v === null || v === undefined || v === "" || k.includes("link") || k.includes("image") || k.includes("logo") || k === "id") continue;
+                if (typeof v === "object") {
+                  const nestedName = v.name || v.display_name || v.score || "";
+                  if (nestedName) summaryParts.push(`${k}: ${nestedName}`);
+                } else {
+                  summaryParts.push(`${k}: ${v}`);
+                }
+              }
+              if (summaryParts.length) lines.push(`  • ${summaryParts.slice(0, 6).join(" | ")}`);
+            } else if (item !== null && item !== "") {
+              lines.push(`  • ${item}`);
+            }
+          });
+          return;
+        }
+        if (typeof node === "object") {
+          for (const [k, v] of Object.entries(node)) {
+            if (lines.length >= maxLines) break;
+            if (v === null || v === undefined || v === "" || k.includes("link") || k.includes("image") || k.includes("logo") || k === "available_tabs") continue;
+            if (typeof v === "object") {
+              walk(v, prefix ? `${prefix}.${k}` : k);
+            } else {
+              const label = k.replace(/_/g, " ");
+              lines.push(`  • ${label}: ${v}`);
+            }
+          }
+        }
+      }
+
+      walk(obj);
+      return lines.join("\n");
+    }
+
+    // FIX 3: Score competition importance so major leagues appear first instead of alphabetical countries
+    function getCompetitionPriority(compName, searchTerms) {
+      const lower = (compName || "").toLowerCase();
+      let score = 0;
+
+      // Exact query keyword match gets highest priority
+      if (searchTerms.some(t => lower.includes(t.toLowerCase()))) score += 100;
+
+      // Major global leagues & tournaments
+      const majorKeywords = [
+        "premier league", "champions league", "europa league", "laliga", "la liga",
+        "serie a", "bundesliga", "ligue 1", "world cup", "icc", "ipl", "indian premier league",
+        "big bash", "sheffield shield", "ashes", "test", "odi", "t20", "nba", "atp", "wta", "grand slam"
+      ];
+      if (majorKeywords.some(m => lower.includes(m))) score += 40;
+
+      return score;
+    }
+
     function extractSearchTerms(query) {
       const aliasMap = {
         ind: "India",
@@ -1229,15 +1307,18 @@
         sl: "Sri Lanka",
         ban: "Bangladesh",
         wi: "West Indies",
-        afg: "Afghanistan"
+        afg: "Afghanistan",
+        wa: "Western Australia"
       };
 
       const stop = new Set([
-        "give", "the", "scorecard", "score", "scores", "of", "that", "it", "is", "running", "currently", "cirrently",
+        "give", "the", "scorecard", "score", "scores", "of", "that", "it", "is", "running", "currently",
         "live", "match", "matches", "today", "latest", "results", "fixtures", "upcoming", "and", "or",
         "for", "in", "on", "with", "stats", "statistics", "lineup", "lineups", "squad", "standings",
         "table", "points", "h2h", "head", "to", "odds", "commentary", "news", "details", "summary",
-        "1st", "2nd", "3rd", "4th", "5th", "test", "odi", "t20", "series", "cricket", "football", "please", "show", "me", "what", "are"
+        "1st", "2nd", "3rd", "4th", "5th", "test", "odi", "t20", "series", "cricket", "football",
+        "tennis", "basketball", "please", "show", "me", "what", "are", "full", "top", "scorers",
+        "profile", "career", "headlines", "rankings", "official"
       ]);
 
       const rawWords = query.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
@@ -1253,7 +1334,7 @@
       return terms;
     }
 
-    // Check available_tabs first so we NEVER waste Flashscore API calls on unavailable endpoints
+    // Check available_tabs first and parse match details cleanly without raw JSON or null dumps
     async function enrichMatchById(matchId, userQuery, headers, availableTabs = null) {
       const q = userQuery.toLowerCase();
       const blocks = [];
@@ -1264,43 +1345,44 @@
         : (Array.isArray(availableTabs) ? availableTabs : null);
 
       if (details) {
-        blocks.push(`[DETAILS]: ${JSON.stringify(details).replace(/https?:\/\/[^\s"]+/g, "").slice(0, 1000)}`);
+        const cleanDetails = cleanJsonToReadable(details, 10);
+        if (cleanDetails) blocks.push(`  **Match Details:**\n${cleanDetails}`);
       }
 
       const canCall = (tabName) => !tabs || tabs.includes(tabName);
       const tasks = [];
 
       if (canCall("summary")) {
-        tasks.push(fsGet(`/matches/summary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "summary", d })));
+        tasks.push(fsGet(`/matches/summary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Match Summary & Scorecard Events", d })));
       }
       if (canCall("statistics") && /\b(scorecard|stat|stats|statistics|xg|possession|shots|detail|details)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "statistics", d })));
+        tasks.push(fsGet(`/matches/statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Match Statistics", d })));
       }
       if (canCall("player_statistics") && /\b(scorecard|player|stat|stats|statistics|batting|bowling)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/player-statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "player_stats", d })));
+        tasks.push(fsGet(`/matches/player-statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Player Scorecard Stats", d })));
       }
       if (canCall("lineups") && /\b(scorecard|lineup|lineups|xi|playing|squad|starting|bench)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/lineups?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "lineups", d })));
+        tasks.push(fsGet(`/matches/lineups?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Lineups & Playing XI", d })));
       }
       if (canCall("commentary") && /\b(commentary|ball|minute|live|scorecard)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/commentary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "commentary", d })));
+        tasks.push(fsGet(`/matches/commentary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Live Commentary", d })));
       }
       if (canCall("h2h") && /\b(h2h|head to head|history)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/h2h?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "h2h", d })));
+        tasks.push(fsGet(`/matches/h2h?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Head-to-Head", d })));
       }
       if (canCall("standings") && /\b(standings|table|points)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/standings?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "standings", d })));
+        tasks.push(fsGet(`/matches/standings?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Competition Standings", d })));
       }
       if (canCall("odds") && /\b(odds|betting|price)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/odds?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "odds", d })));
+        tasks.push(fsGet(`/matches/odds?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Match Odds", d })));
       }
 
       const settled = await Promise.all(tasks);
       for (const item of settled) {
         if (!item.d) continue;
-        const compactJson = JSON.stringify(item.d).replace(/https?:\/\/[^\s"]+/g, "").slice(0, 1100);
-        if (compactJson && compactJson !== "{}" && compactJson !== "[]") {
-          blocks.push(`[${item.key.toUpperCase()}]: ${compactJson}`);
+        const readable = cleanJsonToReadable(item.d, 14);
+        if (readable) {
+          blocks.push(`  **${item.key}:**\n${readable}`);
         }
       }
 
@@ -1322,10 +1404,10 @@
       // A. Rankings (ATP / WTA)
       if (/\b(rankings|ranking|atp|wta)\b/.test(q)) {
         statusEl.querySelector("span").textContent = "Fetching official rankings from Flashscore...";
-        const rankingsList = await fsGet(`/rankings`, headers);
-        const rankData = await fsGet(`/rankings/data?sport=${sport}`, headers);
-        if (rankingsList || rankData) {
-          contextChunks.push(`RANKINGS DATA:\n${JSON.stringify(rankData || rankingsList).slice(0, 2400)}`);
+        const rankData = await fsGet(`/rankings/data?sport=${sport}`, headers) || await fsGet(`/rankings`, headers);
+        const readableRank = cleanJsonToReadable(rankData, 20);
+        if (readableRank) {
+          contextChunks.push(`**${sport.toUpperCase()} Official Rankings:**\n${readableRank}`);
           cards.push({
             name: `${sport.toUpperCase()} Official Rankings`,
             sub: "Flashscore Rankings",
@@ -1340,48 +1422,49 @@
       if (/\b(news|headlines|transfer|transfers|article)\b/.test(q)) {
         statusEl.querySelector("span").textContent = `Fetching latest ${sport} news from Flashscore...`;
         const newsData = await fsGet(`/news?sport=${sport}`, headers);
-        if (newsData) {
-          const items = Array.isArray(newsData) ? newsData : (newsData.articles || newsData.news || []);
-          items.slice(0, 6).forEach(n => {
+        const items = Array.isArray(newsData) ? newsData : (newsData?.articles || newsData?.news || []);
+        if (items.length) {
+          const newsLines = items.slice(0, 6).map(n => {
+            const title = n.title || n.headline || "Headline";
+            const summary = n.summary || n.description || "";
             cards.push({
-              name: n.title || n.headline || "Sports News",
+              name: title,
               sub: `${sport.toUpperCase()} News`,
               url: n.link || n.url || "https://www.flashscore.com/news/",
               text: ""
             });
-          });
-          if (items.length) {
-            contextChunks.push(`FLASHSCORE NEWS (${sport}):\n${JSON.stringify(items.slice(0, 6)).slice(0, 2000)}`);
-            foundSpecificEntityMatch = true;
-          }
+            return `• **${title}**${summary ? " — " + summary : ""}`;
+          }).join("\n");
+          contextChunks.push(`**Latest ${sport.toUpperCase()} News:**\n${newsLines}`);
+          foundSpecificEntityMatch = true;
         }
       }
 
-      // C. Search Teams, Players, or Competitions
+      // C. Search Teams, Players, or Competitions (strictly filtered by sport & multi-word phrase)
       const searchTerms = extractSearchTerms(userQuery);
       let foundMatchesFromSearch = [];
 
       if (searchTerms.length > 0) {
-        statusEl.querySelector("span").textContent = `Searching Flashscore for "${searchTerms.join(" ")}"...`;
-        const searchQuery = searchTerms.slice(0, 3).join(" ");
-        const searchRes = await fsGet(`/search?query=${encodeURIComponent(searchQuery)}`, headers);
+        // Group consecutive capitalized or non-stop words into a clean entity phrase (e.g., "Premier League", "Real Madrid", "Virat Kohli")
+        const searchPhrase = searchTerms.slice(0, 3).join(" ");
+        statusEl.querySelector("span").textContent = `Searching Flashscore (${sport}) for "${searchPhrase}"...`;
 
-        let allEntities = Array.isArray(searchRes)
+        const searchRes = await fsGet(`/search?query=${encodeURIComponent(searchPhrase)}&sport=${encodeURIComponent(sport)}`, headers);
+        let rawEntities = Array.isArray(searchRes)
           ? searchRes
           : (searchRes?.results || searchRes?.items || searchRes?.teams || []);
 
-        if (!allEntities.length && searchTerms.length > 1) {
-          const singleRes = await fsGet(`/search?query=${encodeURIComponent(searchTerms[0])}`, headers);
-          const singleList = Array.isArray(singleRes) ? singleRes : (singleRes?.results || singleRes?.items || []);
-          allEntities = [...singleList];
-        }
+        // Strictly filter out entities from the wrong sport (e.g., block tennis players when sport === "cricket")
+        const filteredEntities = rawEntities.filter(ent => {
+          const entSport = (ent.sport || ent.sport_name || "").toLowerCase();
+          if (entSport && entSport !== sport) return false;
+          return true;
+        });
 
-        const targetEntities = allEntities.slice(0, 3);
-
-        for (const ent of targetEntities) {
-          const entId = ent.id || ent.team_id || ent.player_id || ent.tournament_id;
-          const entName = ent.name || ent.display_name || searchQuery;
-          const entType = (ent.type || "").toLowerCase();
+        for (const ent of filteredEntities.slice(0, 2)) {
+          const entId = extractEntityId(ent);
+          const entName = ent.name || ent.display_name || searchPhrase;
+          const entType = (ent.type || ent.entity_type || "").toLowerCase();
 
           if (!entId) continue;
 
@@ -1392,31 +1475,48 @@
               fsGet(`/players/career?player_id=${encodeURIComponent(entId)}`, headers),
               fsGet(`/players/injuries?player_id=${encodeURIComponent(entId)}`, headers)
             ]);
-            contextChunks.push(`PLAYER (${entName}):\nDetails: ${JSON.stringify(pDet).slice(0, 900)}\nCareer: ${JSON.stringify(pCar).slice(0, 900)}\nInjuries: ${JSON.stringify(pInj).slice(0, 500)}`);
-            cards.push({
-              name: entName,
-              sub: "Player Profile & Career",
-              url: ent.link || "https://www.flashscore.com/",
-              text: ""
-            });
-            foundSpecificEntityMatch = true;
-          } else if (entType.includes("tournament") || entType.includes("competition")) {
-            statusEl.querySelector("span").textContent = `Fetching tournament standings & fixtures for ${entName}...`;
+            const pSections = [];
+            if (pDet) pSections.push(`**Profile:**\n${cleanJsonToReadable(pDet, 10)}`);
+            if (pCar) pSections.push(`**Career Stats:**\n${cleanJsonToReadable(pCar, 10)}`);
+            if (pInj) pSections.push(`**Injury History:**\n${cleanJsonToReadable(pInj, 6)}`);
+
+            if (pSections.length) {
+              contextChunks.push(`**Player Report — ${entName}:**\n${pSections.join("\n")}`);
+              cards.push({
+                name: entName,
+                sub: "Player Profile & Career",
+                url: ent.link || "https://www.flashscore.com/",
+                text: ""
+              });
+              foundSpecificEntityMatch = true;
+            }
+          } else if (entType.includes("tournament") || entType.includes("competition") || entType.includes("league")) {
+            statusEl.querySelector("span").textContent = `Fetching ${entName} standings, top scorers & fixtures...`;
             const [tStand, tRes, tFix, tScorers] = await Promise.all([
               fsGet(`/tournaments/standings?tournament_id=${encodeURIComponent(entId)}`, headers),
               fsGet(`/tournaments/results?tournament_id=${encodeURIComponent(entId)}`, headers),
               fsGet(`/tournaments/fixtures?tournament_id=${encodeURIComponent(entId)}`, headers),
               fsGet(`/tournaments/top-scorers?tournament_id=${encodeURIComponent(entId)}`, headers)
             ]);
-            contextChunks.push(`TOURNAMENT (${entName}):\nStandings: ${JSON.stringify(tStand).slice(0, 1100)}\nRecent Results: ${JSON.stringify(tRes).slice(0, 1000)}\nUpcoming Fixtures: ${JSON.stringify(tFix).slice(0, 900)}\nTop Scorers: ${JSON.stringify(tScorers).slice(0, 700)}`);
-            cards.push({
-              name: entName,
-              sub: "Tournament Table & Fixtures",
-              url: ent.link || "https://www.flashscore.com/",
-              text: ""
-            });
-            foundSpecificEntityMatch = true;
+
+            const tSections = [];
+            if (tStand) tSections.push(`**Standings / Table:**\n${cleanJsonToReadable(tStand, 15)}`);
+            if (tScorers) tSections.push(`**Top Scorers:**\n${cleanJsonToReadable(tScorers, 10)}`);
+            if (tRes) tSections.push(`**Recent Results:**\n${cleanJsonToReadable(tRes, 8)}`);
+            if (tFix) tSections.push(`**Upcoming Fixtures:**\n${cleanJsonToReadable(tFix, 8)}`);
+
+            if (tSections.length) {
+              contextChunks.push(`**Tournament Report — ${entName}:**\n${tSections.join("\n\n")}`);
+              cards.push({
+                name: entName,
+                sub: "Table, Scorers & Fixtures",
+                url: ent.link || "https://www.flashscore.com/",
+                text: ""
+              });
+              foundSpecificEntityMatch = true;
+            }
           } else {
+            // Team entity
             statusEl.querySelector("span").textContent = `Fetching matches, results & squad for ${entName}...`;
             const wantsSquad = /\b(squad|players|roster|lineup|lineups|xi)\b/.test(q);
             const wantsTable = /\b(standings|table|points)\b/.test(q);
@@ -1431,20 +1531,7 @@
             const resList = Array.isArray(teamResults) ? teamResults : (teamResults?.matches || teamResults?.results || []);
             const fixList = Array.isArray(teamFixtures) ? teamFixtures : (teamFixtures?.matches || teamFixtures?.fixtures || []);
 
-            const otherTerms = searchTerms.filter(t => !entName.toLowerCase().includes(t.toLowerCase()));
-            const filterByOpponent = (list) => {
-              if (!otherTerms.length) return list.slice(0, 5);
-              const filtered = list.filter(m => {
-                const str = JSON.stringify(m).toLowerCase();
-                return otherTerms.some(ot => str.includes(ot.toLowerCase()));
-              });
-              return filtered.length ? filtered.slice(0, 5) : list.slice(0, 4);
-            };
-
-            const relevantResults = filterByOpponent(resList);
-            const relevantFixtures = filterByOpponent(fixList);
-
-            for (const m of [...relevantResults, ...relevantFixtures]) {
+            for (const m of [...resList.slice(0, 4), ...fixList.slice(0, 4)]) {
               const home = m.home?.name || m.home_name || "Home";
               const away = m.away?.name || m.away_name || "Away";
               const hScore = m.home_score ?? "-";
@@ -1454,7 +1541,7 @@
               const localTime = formatLocalTime(m.start_time);
 
               const matchObj = {
-                id: m.id,
+                id: extractEntityId(m) || m.id,
                 availableTabs: m.available_tabs || null,
                 name: `${home} ${hScore} - ${aScore} ${away}`,
                 sub: `${comp} • ${stage}${localTime ? " • " + localTime : ""}`,
@@ -1467,22 +1554,30 @@
             }
 
             if (teamSquad) {
-              contextChunks.push(`TEAM SQUAD (${entName}):\n${JSON.stringify(teamSquad).slice(0, 1500)}`);
-              foundSpecificEntityMatch = true;
+              const cleanSquad = cleanJsonToReadable(teamSquad, 18);
+              if (cleanSquad) {
+                contextChunks.push(`**${entName} Squad:**\n${cleanSquad}`);
+                foundSpecificEntityMatch = true;
+              }
             }
             if (teamStandings) {
-              contextChunks.push(`TEAM STANDINGS (${entName}):\n${JSON.stringify(teamStandings).slice(0, 1200)}`);
-              foundSpecificEntityMatch = true;
+              const cleanTable = cleanJsonToReadable(teamStandings, 12);
+              if (cleanTable) {
+                contextChunks.push(`**${entName} Standings:**\n${cleanTable}`);
+                foundSpecificEntityMatch = true;
+              }
             }
           }
         }
       }
 
-      // D. Live Matches & Today's Matches
+      // D. Live Matches & Today's Matches (Prioritizing Major Leagues & Matching Teams)
       statusEl.querySelector("span").textContent = `Checking live ${sport} scoreboard on Flashscore...`;
       let dayData = await fsGet(`/matches/live?sport=${sport}`, headers);
+      let isLiveOnly = true;
       if (!dayData || !dayData.match_count) {
         dayData = await fsGet(`/matches?sport=${sport}&day=0`, headers);
+        isLiveOnly = false;
       }
 
       const competitions = dayData?.competitions || [];
@@ -1491,6 +1586,7 @@
       for (const compBlock of competitions) {
         const compName = compBlock.competition?.display_name || compBlock.competition?.name || sport.toUpperCase();
         const compLink = compBlock.competition?.link || "https://www.flashscore.com/";
+        const compScore = getCompetitionPriority(compName, searchTerms);
 
         for (const m of (compBlock.matches || [])) {
           const home = m.home?.name || "Home";
@@ -1504,17 +1600,17 @@
           if (m.home_period_scores && m.away_period_scores) {
             const hP = Array.isArray(m.home_period_scores) ? m.home_period_scores.join(", ") : JSON.stringify(m.home_period_scores);
             const aP = Array.isArray(m.away_period_scores) ? m.away_period_scores.join(", ") : JSON.stringify(m.away_period_scores);
-            periodDetails = ` | Innings/Periods: ${home} [${hP}] vs ${away} [${aP}]`;
+            periodDetails = `\n  Innings/Periods: ${home} [${hP}] vs ${away} [${aP}]`;
           }
 
-          const searchBlob = `${compName} ${home} ${away} ${stage}`.toLowerCase();
-          const priority = searchTerms.some(k => searchBlob.includes(k.toLowerCase())) ? 1 : 0;
-          if (priority === 1) foundSpecificEntityMatch = true;
+          const searchBlob = `${compName} ${home} ${away}`.toLowerCase();
+          const teamMatchBoost = searchTerms.some(k => searchBlob.includes(k.toLowerCase())) ? 150 : 0;
+          if (teamMatchBoost > 0) foundSpecificEntityMatch = true;
 
           dayMatches.push({
-            id: m.id,
+            id: extractEntityId(m) || m.id,
             availableTabs: m.available_tabs || null,
-            priority,
+            priority: compScore + teamMatchBoost + (isLiveOnly ? 50 : 0),
             name: `${home} ${hScore} - ${aScore} ${away}`,
             sub: `${compName} • ${stage}${localTime ? " • " + localTime : ""}`,
             url: m.link || compLink,
@@ -1534,9 +1630,10 @@
         }
       }
 
-      // E. Enrich top relevant match using available_tabs
+      // E. Enrich top relevant match with full scorecard/summary/stats/lineups whenever requested
       const topMatches = combinedMatches.slice(0, 10);
-      if (topMatches.length > 0 && topMatches[0].id && foundSpecificEntityMatch) {
+      const wantsDeepMatch = /\b(scorecard|detail|details|stat|stats|statistics|summary|lineup|lineups|commentary|h2h|odds)\b/.test(q);
+      if (topMatches.length > 0 && topMatches[0].id && (foundSpecificEntityMatch || wantsDeepMatch)) {
         statusEl.querySelector("span").textContent = `Loading detailed scorecard & stats for ${topMatches[0].name}...`;
         const deepInfo = await enrichMatchById(topMatches[0].id, userQuery, headers, topMatches[0].availableTabs);
         if (deepInfo) {
@@ -1547,26 +1644,27 @@
       const finalCards = cards.length ? cards.slice(0, 10) : topMatches.slice(0, 10);
       if (topMatches.length) {
         contextChunks.unshift(
-          `FLASHSCORE MATCHES & SCORECARDS:\n` + topMatches.map(m => m.text).join("\n\n")
+          `**${isLiveOnly ? "Live" : "Today's"} ${sport.toUpperCase()} Matches & Scorecards:**\n\n` +
+          topMatches.map(m => m.text).join("\n\n")
         );
       }
 
-      // F. Broad Hybrid Sports Web Backup (no oneWeek/strict domain lock so bilateral series & scorecards always resolve)
+      // F. Broad Hybrid Sports Web Backup when Flashscore doesn't cover a requested series/league
       if (searchTerms.length > 0 && !foundSpecificEntityMatch) {
         statusEl.querySelector("span").textContent = `Searching live sports scorecard & series archives...`;
         try {
-          const webSports = await searchLangSearch(`${userQuery} scorecard result schedule`, "", null);
+          const webSports = await searchLangSearch(`${userQuery} scorecard standings stats schedule`, "", null);
           if (webSports.length) {
             const webSnippetBlock = webSports.slice(0, 4).map((r, idx) => {
               const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 1000);
               finalCards.unshift({
                 name: r.name,
-                sub: "Live Sports Web Scorecard",
+                sub: "Live Sports Web Source",
                 url: r.url
               });
-              return `[Sports Source ${idx + 1}] ${r.name}: ${body}`;
+              return `• **${r.name}**\n  ${body}`;
             }).join("\n\n");
-            contextChunks.unshift(`SPORTS SCORECARD & SERIES DATA:\n${webSnippetBlock}`);
+            contextChunks.unshift(`**Live Sports Web Report:**\n\n${webSnippetBlock}`);
           }
         } catch (_) {}
       }
@@ -1675,8 +1773,9 @@
         }
       } catch (_) {}
 
+      // Clean pre-formatted fallback (already stripped of null/raw JSON)
       if (isSports) {
-        return `**Sports Intelligence Report (${payloadData.sport.toUpperCase()}):**\n\n${context.slice(0, 3800)}`;
+        return context.slice(0, 4200);
       }
 
       return `**Live Web Results for "${userQuery}":**\n\n` +
@@ -1709,7 +1808,6 @@
       renderSidebar();
       await appendMessageElement("user", query, [], false);
 
-      // Direct friendly response for greetings
       if (/^(hi|hello|hey|namaste|good morning|good evening|who are you|what is your name)[!?. ]*$/i.test(query)) {
         const greetingReply = "Hello! I'm **Nexus AI**. Ask me anything about **live scores, full scorecards, lineups, standings, player stats, or fixtures** (powered by Flashscore), ask me to **write code** (with one-click copy buttons), or ask any **real-time web question** (powered by LangSearch).";
         session.messages.push({ role: "ai", text: greetingReply, sources: [], isSports: false });
