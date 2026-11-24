@@ -318,37 +318,37 @@
     // =========================================================================
     // ALL API KEYS SAVED DIRECTLY IN CODE (NO UI MODAL)
     // =========================================================================
-    // Paste your standard Google AI Studio key (starts with "AIzaSy...") here:
-    const GEMINI_API_KEY = "AIzaSy_PASTE_YOUR_GOOGLE_AI_STUDIO_KEY_HERE";
+    // Your Gemini API Key (used ONLY for sports queries):
+    const GEMINI_API_KEY = "AQ.Ab8RN6KXZgBocqKVptoWh9QKJgG0nxsZeb6vPD9Vee69q6wJPA";
 
-    // Your LangSearch API Key (used for all general web searches & live fallback):
-    const LANGSEARCH_API_KEY = "sk-ac8f61d7eb02496d83516c49328064d1";
+    // Your New LangSearch API Key (used for all general web searches & live sports context):
+    const LANGSEARCH_API_KEY = "sk-0bb3ddb745e441e987b37b972096f3e0";
 
     // Your Custom Render Cricket-API + Key:
     const CRICKET_API_BASE = "https://cricket-api-1-hmcw.onrender.com";
     const CRICKET_API_KEY = "ck_live_nexus_2026";
     // =========================================================================
 
-    let chats = JSON.parse(localStorage.getItem("nexus_chats_v3") || "[]");
+    let chats = JSON.parse(localStorage.getItem("nexus_chats_v4") || "[]");
     let currentChatId = null;
 
-    // 1. Detect if the prompt is Sports-related
+    // 1. Detect if the prompt is Sports-related (handles typos like "sprts" too)
     function isSportsQuery(text) {
       const selectedSport = document.getElementById("sportFilter").value;
       if (selectedSport !== "auto") return true;
 
-      const sportsRegex = /\b(cricket|ipl|t20|t20i|odi|test match|sheffield shield|big bash|bbl|psl|cpl|world cup|ashes|wicket|wickets|overs|runs|runs needed|target|batting|bowling|scorecard|innings|kohli|rohit|bumrah|dhoni|gill|hardik|suryakumar|pant|jadeja|babar|root|smith|cummins|starc|williamson|football|soccer|premier league|epl|laliga|bundesliga|serie a|ligue 1|champions league|ucl|isl|messi|ronaldo|mbappe|haaland|goal|goals|lineup|lineups|fixture|fixtures|live score|live scores|match score|standings|points table|tennis|atp|wta|grand slam|wimbledon|nba|basketball|hockey|badminton|bwf)\b/i;
+      const sportsRegex = /\b(sport|sports|sprts|cricket|ipl|t20|t20i|odi|test match|sheffield shield|big bash|bbl|psl|cpl|world cup|ashes|wicket|wickets|overs|runs|runs needed|target|batting|bowling|scorecard|innings|kohli|rohit|bumrah|dhoni|gill|hardik|suryakumar|pant|jadeja|babar|root|smith|cummins|starc|williamson|football|soccer|premier league|epl|laliga|bundesliga|serie a|ligue 1|champions league|ucl|isl|messi|ronaldo|mbappe|haaland|goal|goals|lineup|lineups|fixture|fixtures|live score|live scores|match score|standings|points table|tennis|atp|wta|grand slam|wimbledon|nba|basketball|hockey|badminton|bwf)\b/i;
       return sportsRegex.test(text);
     }
 
-    // 2. Sports Handler -> Uses Render Cricket-API + Gemini (only if AIzaSy key is set) + LangSearch Live Sports
+    // 2. Sports Handler -> Uses Gemini API Key + Render Cricket-API + LangSearch Live Sports
     async function handleSportsQuery(userPrompt) {
       const sportChoice = document.getElementById("sportFilter").value;
       let renderMatches = [];
       let webSources = [];
       let webSnippets = "";
 
-      // Step A: Pull live matches from your Render Cricket-API
+      // Step A: Pull live cricket matches from your Render Cricket-API
       try {
         const res = await fetch(`${CRICKET_API_BASE}/live`, {
           headers: { "X-API-Key": CRICKET_API_KEY }
@@ -380,14 +380,14 @@
           const lsData = await lsRes.json();
           const pages = lsData?.data?.webPages?.value || lsData?.webPages?.value || [];
           webSources = pages.slice(0, 4).map(p => ({ title: p.name || "Live Source", url: p.url }));
-          webSnippets = pages.slice(0, 4).map(p => `• ${p.name}: ${p.summary || p.snippet || ""}`).join("\n");
+          webSnippets = pages.slice(0, 4).map(p => `• **${p.name}**: ${p.summary || p.snippet || ""}`).join("\n");
         }
       } catch (e) {
         console.warn("LangSearch sports lookup error:", e);
       }
 
-      // Step C: If a valid AIzaSy... Gemini key is configured, synthesize full scorecard & analysis with Gemini
-      if (GEMINI_API_KEY && GEMINI_API_KEY.startsWith("AIza")) {
+      // Step C: Call Gemini API ONLY for sports queries (with Google Search grounding)
+      if (GEMINI_API_KEY) {
         try {
           const geminiRes = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
@@ -398,7 +398,7 @@
                 tools: [{ google_search: {} }],
                 contents: [{
                   parts: [{
-                    text: `You are Nexus AI's Live Sports Analyst. Date: ${new Date().toDateString()}.\nGive exact live scores, wickets, overs, batting/bowling stats, and match status.\n\nRender Live Cricket Feed:\n${renderMatches.join("\n")}\n\nWeb Sports Context:\n${webSnippets}\n\nUser Question: ${userPrompt}`
+                    text: `You are Nexus AI's Live Sports Analyst. Date: ${new Date().toDateString()}.\nProvide exact live scores, wickets, overs, batting & bowling stats, and match status.\n\nRender Live Cricket Feed:\n${renderMatches.join("\n")}\n\nWeb Sports Context:\n${webSnippets}\n\nUser Question: ${userPrompt}`
                   }]
                 }]
               })
@@ -408,12 +408,18 @@
           if (geminiRes.ok) {
             const gData = await geminiRes.json();
             const gText = gData?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("\n");
+            const groundingChunks = gData?.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+            const gSources = groundingChunks
+              .filter(c => c.web && c.web.uri)
+              .map(c => ({ title: c.web.title || "Live Sports Source", url: c.web.uri }))
+              .slice(0, 4);
+
             if (gText) {
               return {
                 engine: "Gemini Sports AI + Render Cricket API",
                 isSports: true,
                 text: gText,
-                sources: webSources
+                sources: gSources.length ? gSources : webSources
               };
             }
           }
@@ -422,7 +428,7 @@
         }
       }
 
-      // Step D: Direct Live Render Cricket-API + LangSearch Sports Response (works even without Gemini key)
+      // Step D: Seamless fallback combining your Render Cricket-API + LangSearch Live Sports
       let output = "";
       if (renderMatches.length > 0) {
         output += "**Live Cricket Matches (Render API Feed):**\n" + renderMatches.map(m => `• ${m}`).join("\n") + "\n\n";
@@ -446,46 +452,74 @@
     async function handleGeneralQuery(userPrompt) {
       const freshness = document.getElementById("timeFilter").value;
 
-      const res = await fetch("https://api.langsearch.com/v1/web-search", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${LANGSEARCH_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          query: userPrompt,
-          freshness: freshness,
-          summary: true,
-          count: 5
-        })
-      });
+      try {
+        const res = await fetch("https://api.langsearch.com/v1/web-search", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${LANGSEARCH_API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            query: userPrompt,
+            freshness: freshness,
+            summary: true,
+            count: 5
+          })
+        });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.message || data?.error || `LangSearch Error (${res.status})`);
+        const data = await res.json();
+        if (res.ok) {
+          const webPages = data?.data?.webPages?.value || data?.webPages?.value || [];
+          const sources = webPages.slice(0, 4).map(p => ({
+            title: p.name || p.title || "Web Result",
+            url: p.url
+          }));
+
+          const formatted = webPages.length === 0
+            ? "No web results found for your query."
+            : webPages.slice(0, 4).map((item, idx) => {
+                const snippet = item.summary || item.snippet || "";
+                return `**${idx + 1}. ${item.name || "Result"}**\n${snippet}`;
+              }).join("\n\n");
+
+          return {
+            engine: "LangSearch Web Intelligence",
+            isSports: false,
+            text: formatted,
+            sources
+          };
+        }
+      } catch (e) {
+        console.warn("LangSearch error, falling back to Wikipedia:", e);
       }
 
-      const webPages = data?.data?.webPages?.value || data?.webPages?.value || [];
-      const sources = webPages.slice(0, 4).map(p => ({
-        title: p.name || p.title || "Web Result",
-        url: p.url
-      }));
-
-      let formatted = "";
-      if (webPages.length === 0) {
-        formatted = "No web results found for your query.";
-      } else {
-        formatted = webPages.slice(0, 4).map((item, idx) => {
-          const snippet = item.summary || item.snippet || "";
-          return `**${idx + 1}. ${item.name || "Result"}**\n${snippet}`;
+      // Free Wikipedia fallback for conversational/factual queries
+      const wikiRes = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(userPrompt)}&format=json&origin=*`
+      );
+      const wikiData = await wikiRes.json();
+      const hits = wikiData?.query?.search || [];
+      if (hits.length > 0) {
+        const cleanText = hits.slice(0, 3).map((h, i) => {
+          const plain = h.snippet.replace(/<[^>]*>/g, "");
+          return `**${i + 1}. ${h.title}**\n${plain}...`;
         }).join("\n\n");
+        return {
+          engine: "Wikipedia Knowledge Fallback",
+          isSports: false,
+          text: cleanText,
+          sources: hits.slice(0, 3).map(h => ({
+            title: h.title,
+            url: `https://en.wikipedia.org/wiki/${encodeURIComponent(h.title.replace(/ /g, "_"))}`
+          }))
+        };
       }
 
       return {
-        engine: "LangSearch Web Intelligence",
+        engine: "Nexus AI",
         isSports: false,
-        text: formatted,
-        sources
+        text: "Hello! Ask me anything about live sports scores, coding, or web topics.",
+        sources: []
       };
     }
 
@@ -501,7 +535,7 @@
     }
 
     function saveChats() {
-      localStorage.setItem("nexus_chats_v3", JSON.stringify(chats));
+      localStorage.setItem("nexus_chats_v4", JSON.stringify(chats));
       renderSidebar();
     }
 
