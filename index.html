@@ -2,56 +2,235 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Nexus AI — Live Web Search Assistant</title>
   <style>
     :root {
-      --bg: #090d16;
-      --panel: rgba(17, 24, 39, 0.78);
+      --bg: #070b14;
+      --sidebar-bg: #0c1220;
+      --panel: rgba(15, 23, 42, 0.85);
       --border: rgba(255, 255, 255, 0.09);
       --text: #f3f4f6;
       --muted: #9ca3af;
       --accent: #38bdf8;
       --accent-2: #818cf8;
       --user-bubble: linear-gradient(135deg, #2563eb, #4f46e5);
-      --ai-bubble: rgba(30, 41, 59, 0.85);
+      --ai-bubble: rgba(30, 41, 59, 0.82);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
     body {
-      background: radial-gradient(circle at 15% 15%, #1e1b4b 0%, var(--bg) 45%, #05080f 100%);
+      background: radial-gradient(circle at 20% 10%, #1e1b4b 0%, var(--bg) 50%, #04070d 100%);
       color: var(--text);
-      height: 100vh;
+      height: 100dvh;
       display: flex;
-      flex-direction: column;
       overflow: hidden;
     }
 
-    /* Header */
+    /* Sidebar (Chat History) */
+    aside#sidebar {
+      width: 270px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    #newChatBtn {
+      flex: 1;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(99, 102, 241, 0.18));
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+
+    #newChatBtn:hover {
+      background: rgba(56, 189, 248, 0.28);
+    }
+
+    #closeSidebarBtn {
+      display: none;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .history-label {
+      padding: 12px 16px 6px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    #historyList {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.86rem;
+      transition: 0.15s;
+      gap: 8px;
+    }
+
+    .history-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+    }
+
+    .history-item.active {
+      background: rgba(56, 189, 248, 0.14);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .history-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .delete-chat-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 0.95rem;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 6px;
+      opacity: 0.7;
+    }
+
+    .delete-chat-btn:hover {
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.12);
+      opacity: 1;
+    }
+
+    .sidebar-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    #clearAllBtn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 8px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    #clearAllBtn:hover {
+      border-color: #f87171;
+      color: #f87171;
+    }
+
+    /* Overlay for mobile sidebar */
+    #sidebarOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 25;
+      backdrop-filter: blur(2px);
+    }
+
+    /* Main Workspace */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100dvh;
+    }
+
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 24px;
+      padding: 12px 18px;
       background: var(--panel);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
-      z-index: 10;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #menuBtn {
+      display: none;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 1.1rem;
+      cursor: pointer;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 9px;
       font-weight: 700;
-      font-size: 1.15rem;
-      letter-spacing: 0.3px;
+      font-size: 1.1rem;
     }
 
     .logo-dot {
-      width: 12px;
-      height: 12px;
+      width: 11px;
+      height: 11px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
       box-shadow: 0 0 12px var(--accent);
@@ -59,21 +238,21 @@
 
     .controls {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
-      flex-wrap: wrap;
     }
 
     select, .pill-toggle {
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.92);
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 6px 12px;
+      padding: 7px 12px;
       border-radius: 20px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       cursor: pointer;
       outline: none;
       transition: 0.2s;
+      white-space: nowrap;
     }
 
     select:hover, .pill-toggle:hover {
@@ -81,21 +260,21 @@
     }
 
     .pill-toggle.active {
-      background: rgba(56, 189, 248, 0.16);
+      background: rgba(56, 189, 248, 0.18);
       border-color: var(--accent);
       color: var(--accent);
       font-weight: 600;
     }
 
-    /* Chat Container */
+    /* Chat Area */
     #chat {
       flex: 1;
       overflow-y: auto;
-      padding: 24px 16px;
+      padding: 20px 16px;
       display: flex;
       flex-direction: column;
       gap: 18px;
-      max-width: 900px;
+      max-width: 880px;
       width: 100%;
       margin: 0 auto;
       scroll-behavior: smooth;
@@ -104,19 +283,24 @@
     .welcome {
       text-align: center;
       margin: auto;
-      max-width: 560px;
-      padding: 24px;
+      max-width: 540px;
+      padding: 20px 12px;
     }
 
     .welcome h1 {
-      font-size: 2rem;
+      font-size: clamp(1.55rem, 4vw, 2.1rem);
       background: linear-gradient(90deg, #38bdf8, #a5b4fc);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 10px;
     }
 
-    .welcome p { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; }
+    .welcome p {
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.55;
+      margin-bottom: 22px;
+    }
 
     .suggestions {
       display: flex;
@@ -126,10 +310,10 @@
     }
 
     .suggestion-btn {
-      background: rgba(30, 41, 59, 0.7);
+      background: rgba(30, 41, 59, 0.75);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 8px 14px;
+      padding: 9px 14px;
       border-radius: 18px;
       font-size: 0.83rem;
       cursor: pointer;
@@ -137,7 +321,7 @@
     }
 
     .suggestion-btn:hover {
-      background: rgba(56, 189, 248, 0.15);
+      background: rgba(56, 189, 248, 0.16);
       border-color: var(--accent);
       transform: translateY(-1px);
     }
@@ -146,12 +330,12 @@
     .msg {
       display: flex;
       flex-direction: column;
-      max-width: 85%;
-      animation: fadeIn 0.25s ease;
+      max-width: 88%;
+      animation: fadeIn 0.2s ease;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -161,7 +345,7 @@
     .bubble {
       padding: 14px 18px;
       border-radius: 18px;
-      line-height: 1.6;
+      line-height: 1.65;
       font-size: 0.95rem;
       white-space: pre-wrap;
       word-wrap: break-word;
@@ -180,13 +364,26 @@
       backdrop-filter: blur(10px);
     }
 
+    /* Typewriter Blinking Cursor */
+    .typing-cursor::after {
+      content: "▍";
+      color: var(--accent);
+      margin-left: 2px;
+      animation: blink 0.8s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
     /* Sources Strip */
     .sources-title {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.8px;
       color: var(--accent);
-      margin-bottom: 8px;
+      margin-bottom: 7px;
       font-weight: 600;
     }
 
@@ -195,16 +392,17 @@
       gap: 8px;
       overflow-x: auto;
       padding-bottom: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
     }
 
     .source-card {
-      min-width: 190px;
-      max-width: 220px;
-      background: rgba(15, 23, 42, 0.85);
+      min-width: 175px;
+      max-width: 210px;
+      background: rgba(15, 23, 42, 0.9);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 10px 12px;
+      padding: 9px 12px;
       text-decoration: none;
       color: var(--text);
       transition: 0.2s;
@@ -213,20 +411,20 @@
 
     .source-card:hover {
       border-color: var(--accent);
-      background: rgba(30, 41, 59, 0.95);
+      background: rgba(30, 41, 59, 0.98);
     }
 
     .source-domain {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--accent);
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .source-name {
-      font-size: 0.8rem;
+      font-size: 0.79rem;
       font-weight: 600;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -235,14 +433,14 @@
       line-height: 1.3;
     }
 
-    /* Status Indicator */
+    /* Status Spinner */
     .status {
       display: flex;
       align-items: center;
       gap: 8px;
       color: var(--accent);
-      font-size: 0.86rem;
-      padding: 8px 12px;
+      font-size: 0.85rem;
+      padding: 6px 10px;
     }
 
     .spinner {
@@ -256,21 +454,21 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Input Bar */
+    /* Bottom Input Bar */
     .input-area {
-      padding: 14px 16px 20px;
-      background: linear-gradient(to top, rgba(9, 13, 22, 0.98), rgba(9, 13, 22, 0.7));
+      padding: 12px 14px calc(14px + env(safe-area-inset-bottom));
+      background: linear-gradient(to top, rgba(7, 11, 20, 0.98), rgba(7, 11, 20, 0.78));
     }
 
     .input-box {
-      max-width: 900px;
+      max-width: 880px;
       margin: 0 auto;
       display: flex;
-      gap: 10px;
-      background: rgba(30, 41, 59, 0.85);
+      gap: 8px;
+      background: rgba(30, 41, 59, 0.88);
       border: 1px solid var(--border);
       border-radius: 26px;
-      padding: 8px 10px 8px 18px;
+      padding: 7px 8px 7px 16px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       transition: 0.2s;
     }
@@ -282,10 +480,11 @@
 
     input[type="text"] {
       flex: 1;
+      min-width: 0;
       background: transparent;
       border: none;
       color: var(--text);
-      font-size: 0.96rem;
+      font-size: 16px; /* Prevents iOS/Android auto-zoom on focus */
       outline: none;
     }
 
@@ -294,81 +493,327 @@
       color: #fff;
       border: none;
       border-radius: 20px;
-      padding: 10px 20px;
+      padding: 10px 18px;
       font-weight: 600;
       font-size: 0.9rem;
       cursor: pointer;
       transition: 0.2s;
+      flex-shrink: 0;
     }
 
-    button#sendBtn:hover { opacity: 0.92; transform: scale(1.02); }
-    button#sendBtn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    button#sendBtn:hover { opacity: 0.92; }
+    button#sendBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Responsive Breakpoints (Tablets & Phones) */
+    @media (max-width: 768px) {
+      aside#sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
+      }
+
+      aside#sidebar.open {
+        transform: translateX(0);
+      }
+
+      #sidebarOverlay.open {
+        display: block;
+      }
+
+      #menuBtn, #closeSidebarBtn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .msg {
+        max-width: 94%;
+      }
+
+      .bubble {
+        padding: 12px 15px;
+        font-size: 0.92rem;
+      }
+    }
+
+    @media (max-width: 440px) {
+      header {
+        padding: 10px 12px;
+      }
+      .pill-toggle, select {
+        padding: 6px 10px;
+        font-size: 0.76rem;
+      }
+      button#sendBtn {
+        padding: 9px 14px;
+        font-size: 0.85rem;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand">
-      <div class="logo-dot"></div>
-      <span>Nexus AI</span>
-    </div>
-    <div class="controls">
-      <button id="sportsToggle" class="pill-toggle" title="Focus on ESPNcricinfo, Cricbuzz & ESPN">🏏 Live Sports Mode</button>
-      <select id="freshnessSelect" title="Search Recency">
-        <option value="">Any Time</option>
-        <option value="oneDay" selected>Past 24 Hours</option>
-        <option value="oneWeek">Past Week</option>
-        <option value="oneMonth">Past Month</option>
-      </select>
-    </div>
-  </header>
+  <div id="sidebarOverlay"></div>
 
-  <main id="chat">
-    <div class="welcome" id="welcomeScreen">
-      <h1>Ask Anything, Grounded Live</h1>
-      <p>Powered by LangSearch Web Search API &amp; real-time AI synthesis. Toggle <strong>Live Sports Mode</strong> for match updates or ask any question.</p>
-      <div class="suggestions">
-        <button class="suggestion-btn" onclick="quickAsk('Latest India cricket match score and highlights')">🏏 Latest India cricket score</button>
-        <button class="suggestion-btn" onclick="quickAsk('Top AI breakthroughs this week')">🤖 Top AI breakthroughs this week</button>
-        <button class="suggestion-btn" onclick="quickAsk('Latest Premier League football standings and results')">⚽ Premier League results</button>
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <button id="newChatBtn">+ New Chat</button>
+      <button id="closeSidebarBtn" title="Close Menu">✕</button>
+    </div>
+    <div class="history-label">Saved Chats</div>
+    <div id="historyList"></div>
+    <div class="sidebar-footer">
+      <button id="clearAllBtn">Clear All History</button>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header>
+      <div class="header-left">
+        <button id="menuBtn" title="Chat History">☰</button>
+        <div class="brand">
+          <div class="logo-dot"></div>
+          <span>Nexus AI</span>
+        </div>
       </div>
-    </div>
-  </main>
+      <div class="controls">
+        <button id="sportsToggle" class="pill-toggle" title="Focus on ESPNcricinfo, Cricbuzz & ESPN">🏏 Live Sports</button>
+        <select id="freshnessSelect" title="Search Recency">
+          <option value="">Any Time</option>
+          <option value="oneDay">Past 24 Hours</option>
+          <option value="oneWeek" selected>Past Week</option>
+          <option value="oneMonth">Past Month</option>
+        </select>
+      </div>
+    </header>
 
-  <div class="input-area">
-    <form class="input-box" id="chatForm">
-      <input type="text" id="promptInput" placeholder="Ask about live matches, news, or anything on the web..." autocomplete="off" required />
-      <button type="submit" id="sendBtn">Ask AI</button>
-    </form>
+    <main id="chat"></main>
+
+    <div class="input-area">
+      <form class="input-box" id="chatForm">
+        <input type="text" id="promptInput" placeholder="Ask about live matches, news, or anything..." autocomplete="off" required />
+        <button type="submit" id="sendBtn">Ask AI</button>
+      </form>
+    </div>
   </div>
 
   <script>
     const LANGSEARCH_API_KEY = "sk-8312c802939e459ba348814af35a41b3";
     const LANGSEARCH_URL = "https://api.langsearch.com/v1/web-search";
+    const STORAGE_KEY = "nexus_ai_sessions_v1";
 
+    // DOM References
+    const sidebar = document.getElementById("sidebar");
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
+    const menuBtn = document.getElementById("menuBtn");
+    const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+    const newChatBtn = document.getElementById("newChatBtn");
+    const clearAllBtn = document.getElementById("clearAllBtn");
+    const historyList = document.getElementById("historyList");
     const chat = document.getElementById("chat");
     const chatForm = document.getElementById("chatForm");
     const promptInput = document.getElementById("promptInput");
     const sendBtn = document.getElementById("sendBtn");
     const freshnessSelect = document.getElementById("freshnessSelect");
     const sportsToggle = document.getElementById("sportsToggle");
-    const welcomeScreen = document.getElementById("welcomeScreen");
 
     let sportsMode = false;
+    let sessions = loadSessions();
+    let currentSessionId = sessions.length ? sessions[0].id : null;
 
+    // Mobile Sidebar Drawer Controls
+    function openSidebar() {
+      sidebar.classList.add("open");
+      sidebarOverlay.classList.add("open");
+    }
+    function closeSidebar() {
+      sidebar.classList.remove("open");
+      sidebarOverlay.classList.remove("open");
+    }
+    menuBtn.addEventListener("click", openSidebar);
+    closeSidebarBtn.addEventListener("click", closeSidebar);
+    sidebarOverlay.addEventListener("click", closeSidebar);
+
+    // Sports Mode Toggle
     sportsToggle.addEventListener("click", () => {
       sportsMode = !sportsMode;
       sportsToggle.classList.toggle("active", sportsMode);
-      if (sportsMode) freshnessSelect.value = "oneDay";
+      freshnessSelect.value = sportsMode ? "oneDay" : "oneWeek";
     });
+
+    // LocalStorage Persistence
+    function loadSessions() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveSessions() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+      } catch (e) {
+        console.warn("Storage limit reached:", e);
+      }
+    }
+
+    function createNewSession(firstTitle = "New Chat") {
+      const id = "chat_" + Date.now();
+      const session = {
+        id,
+        title: firstTitle.slice(0, 42),
+        updatedAt: Date.now(),
+        messages: []
+      };
+      sessions.unshift(session);
+      currentSessionId = id;
+      saveSessions();
+      renderSidebar();
+      renderActiveChat();
+      closeSidebar();
+      return session;
+    }
+
+    function getCurrentSession() {
+      return sessions.find(s => s.id === currentSessionId) || null;
+    }
+
+    newChatBtn.addEventListener("click", () => {
+      currentSessionId = null;
+      renderSidebar();
+      renderActiveChat();
+      closeSidebar();
+      promptInput.focus();
+    });
+
+    clearAllBtn.addEventListener("click", () => {
+      if (!sessions.length) return;
+      if (confirm("Delete all saved chats permanently?")) {
+        sessions = [];
+        currentSessionId = null;
+        saveSessions();
+        renderSidebar();
+        renderActiveChat();
+      }
+    });
+
+    function deleteSession(id, event) {
+      event.stopPropagation();
+      sessions = sessions.filter(s => s.id !== id);
+      if (currentSessionId === id) {
+        currentSessionId = sessions.length ? sessions[0].id : null;
+      }
+      saveSessions();
+      renderSidebar();
+      renderActiveChat();
+    }
+
+    function renderSidebar() {
+      historyList.innerHTML = "";
+      if (!sessions.length) {
+        historyList.innerHTML = `<div style="padding:12px;color:var(--muted);font-size:0.82rem;">No saved chats yet.</div>`;
+        return;
+      }
+
+      sessions.forEach(s => {
+        const item = document.createElement("div");
+        item.className = "history-item" + (s.id === currentSessionId ? " active" : "");
+        item.onclick = () => {
+          currentSessionId = s.id;
+          renderSidebar();
+          renderActiveChat();
+          closeSidebar();
+        };
+
+        const titleSpan = document.createElement("span");
+        titleSpan.className = "history-title";
+        titleSpan.textContent = s.title;
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "delete-chat-btn";
+        delBtn.title = "Delete chat";
+        delBtn.textContent = "🗑";
+        delBtn.onclick = (e) => deleteSession(s.id, e);
+
+        item.appendChild(titleSpan);
+        item.appendChild(delBtn);
+        historyList.appendChild(item);
+      });
+    }
+
+    function renderActiveChat() {
+      chat.innerHTML = "";
+      const session = getCurrentSession();
+
+      if (!session || !session.messages.length) {
+        chat.innerHTML = `
+          <div class="welcome" id="welcomeScreen">
+            <h1>Ask Anything, Grounded Live</h1>
+            <p>Powered by LangSearch Web Search API with permanent chat memory. Toggle <strong>Live Sports</strong> for match updates or ask any question.</p>
+            <div class="suggestions">
+              <button class="suggestion-btn" onclick="quickAsk('Latest India cricket match score and highlights')">🏏 Latest India cricket score</button>
+              <button class="suggestion-btn" onclick="quickAsk('Top AI model releases and breakthroughs this week')">🤖 Top AI breakthroughs this week</button>
+              <button class="suggestion-btn" onclick="quickAsk('Latest Premier League football standings and results')">⚽ Premier League results</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      session.messages.forEach(m => {
+        appendMessageElement(m.role, m.text, m.sources || [], false);
+      });
+      chat.scrollTop = chat.scrollHeight;
+    }
 
     function quickAsk(text) {
       promptInput.value = text;
       chatForm.dispatchEvent(new Event("submit"));
     }
 
-    function appendMessage(role, text, sources = []) {
-      if (welcomeScreen) welcomeScreen.style.display = "none";
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function formatBasicMarkdown(text) {
+      return escapeHtml(text)
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/`([^`]+)`/g, "<code style='background:rgba(0,0,0,0.35);padding:2px 6px;border-radius:5px;'>$1</code>");
+    }
+
+    // Typewriter Renderer
+    function typeWriterEffect(element, fullText, speed = 10) {
+      return new Promise(resolve => {
+        let index = 0;
+        element.classList.add("typing-cursor");
+
+        function step() {
+          // Adaptive chunk size so long answers finish smoothly in ~2-3 seconds
+          const chunk = fullText.length > 600 ? 4 : 2;
+          index = Math.min(index + chunk, fullText.length);
+          element.innerHTML = formatBasicMarkdown(fullText.slice(0, index));
+          chat.scrollTop = chat.scrollHeight;
+
+          if (index < fullText.length) {
+            setTimeout(step, speed);
+          } else {
+            element.classList.remove("typing-cursor");
+            resolve();
+          }
+        }
+        step();
+      });
+    }
+
+    async function appendMessageElement(role, text, sources = [], animate = false) {
+      const welcome = document.getElementById("welcomeScreen");
+      if (welcome) welcome.remove();
 
       const wrapper = document.createElement("div");
       wrapper.className = `msg ${role}`;
@@ -401,15 +846,20 @@
 
       const bubble = document.createElement("div");
       bubble.className = "bubble";
-      bubble.innerHTML = formatBasicMarkdown(escapeHtml(text));
       wrapper.appendChild(bubble);
-
       chat.appendChild(wrapper);
+
+      if (animate && role === "ai") {
+        await typeWriterEffect(bubble, text);
+      } else {
+        bubble.innerHTML = formatBasicMarkdown(text);
+      }
       chat.scrollTop = chat.scrollHeight;
     }
 
     function createStatus(text) {
-      if (welcomeScreen) welcomeScreen.style.display = "none";
+      const welcome = document.getElementById("welcomeScreen");
+      if (welcome) welcome.remove();
       const el = document.createElement("div");
       el.className = "status";
       el.innerHTML = `<div class="spinner"></div><span>${escapeHtml(text)}</span>`;
@@ -418,25 +868,12 @@
       return el;
     }
 
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    }
-
-    function formatBasicMarkdown(text) {
-      return text
-        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-        .replace(/`([^`]+)`/g, "<code style='background:rgba(0,0,0,0.35);padding:2px 6px;border-radius:5px;'>$1</code>");
-    }
-
     async function searchLangSearch(query) {
       const payload = {
-        query: query,
+        query,
         count: 5,
         contents: {
-          text: { max_characters: 2500 }
+          text: { max_characters: 2200 }
         }
       };
 
@@ -466,41 +903,61 @@
       return data?.data?.webPages?.value || [];
     }
 
+    // Reliable Multi-Fallback AI Answer Synthesizer
     async function generateGroundedAnswer(userQuery, results) {
       if (!results.length) {
-        return "No live web results were found for that query. Try switching freshness to 'Any Time' or turning off Live Sports Mode.";
+        return "No live web results were found for that query. Try switching the time filter to **Any Time** or turning off **Live Sports**.";
       }
 
-      const context = results.map((r, i) => {
-        const body = r.text || r.snippet || "";
-        return `[${i + 1}] Title: ${r.name}\nURL: ${r.url}\nContent: ${body}`;
-      }).join("\n\n---\n\n");
+      const compactContext = results.map((r, i) => {
+        const cleanBody = (r.snippet || r.text || "").replace(/\s+/g, " ").slice(0, 650);
+        return `[${i + 1}] ${r.name}: ${cleanBody}`;
+      }).join("\n");
 
-      const systemPrompt =
-        "You are Nexus AI, a sharp, accurate research assistant. Answer the user's question using ONLY the provided live web search results. " +
-        "If the user asks for a score or facts not clearly present in the sources, say what is available and note what is missing. Keep formatting clean with bullet points and bold key stats.";
+      const prompt =
+        `Answer the user's question concisely using ONLY these live search results. Use bullet points and **bold** key facts.\n\n` +
+        `Question: ${userQuery}\n\nResults:\n${compactContext}`;
 
-      const fullPrompt = `${systemPrompt}\n\nWEB SEARCH RESULTS:\n${context}\n\nUSER QUESTION: ${userQuery}`;
+      // Attempt 1: Pollinations GET text endpoint (lightweight, high reliability, no CORS preflight issues)
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 14000);
+        const getUrl = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai`;
+        const res = await fetch(getUrl, { signal: controller.signal });
+        clearTimeout(timer);
+        if (res.ok) {
+          const text = (await res.text()).trim();
+          if (text && !text.startsWith("<!DOCTYPE")) return text;
+        }
+      } catch (_) {}
 
-      // Free keyless AI synthesis endpoint
-      const aiRes = await fetch("https://text.pollinations.ai/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: `WEB SEARCH RESULTS:\n${context}\n\nUSER QUESTION: ${userQuery}` }
-          ],
-          model: "openai"
-        })
-      });
+      // Attempt 2: Pollinations POST JSON endpoint
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 14000);
+        const postRes = await fetch("https://text.pollinations.ai/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            messages: [{ role: "user", content: prompt }],
+            model: "openai"
+          })
+        });
+        clearTimeout(timer);
+        if (postRes.ok) {
+          const text = (await postRes.text()).trim();
+          if (text && !text.startsWith("<!DOCTYPE")) return text;
+        }
+      } catch (_) {}
 
-      if (!aiRes.ok) {
-        // Fallback: return clean search summaries directly if LLM endpoint is busy
-        return results.map(r => `• **${r.name}**\n  ${r.snippet || (r.text || "").slice(0, 220)}...`).join("\n\n");
-      }
+      // Attempt 3: Clean extractive summary (never dumps messy raw HTML/nav text)
+      const highlights = results.slice(0, 4).map(r => {
+        const snippet = (r.snippet || r.text || "").replace(/\s+/g, " ").trim().slice(0, 200);
+        return `• **${r.name}** — ${snippet}${snippet.length >= 200 ? "..." : ""}`;
+      }).join("\n\n");
 
-      return await aiRes.text();
+      return `Here are the top live findings for **${userQuery}**:\n\n${highlights}`;
     }
 
     chatForm.addEventListener("submit", async (e) => {
@@ -508,31 +965,53 @@
       const query = promptInput.value.trim();
       if (!query) return;
 
+      let session = getCurrentSession();
+      if (!session) {
+        session = createNewSession(query);
+      } else if (session.messages.length === 0) {
+        session.title = query.slice(0, 42);
+      }
+
       promptInput.value = "";
       sendBtn.disabled = true;
-      appendMessage("user", query);
+
+      // Save & render user message
+      session.messages.push({ role: "user", text: query });
+      session.updatedAt = Date.now();
+      saveSessions();
+      renderSidebar();
+      await appendMessageElement("user", query, [], false);
 
       const statusEl = createStatus("Searching live web via LangSearch...");
 
       try {
         const results = await searchLangSearch(query);
-        statusEl.querySelector("span").textContent = `Reading ${results.length} sources & generating answer...`;
+        statusEl.querySelector("span").textContent = `Synthesizing ${results.length} live sources...`;
         const answer = await generateGroundedAnswer(query, results);
         statusEl.remove();
-        appendMessage("ai", answer, results);
+
+        const slimSources = results.map(r => ({ name: r.name, url: r.url }));
+        session.messages.push({ role: "ai", text: answer, sources: slimSources });
+        session.updatedAt = Date.now();
+        saveSessions();
+        renderSidebar();
+
+        await appendMessageElement("ai", answer, slimSources, true);
       } catch (err) {
         statusEl.remove();
-        appendMessage(
-          "ai",
-          `⚠️ **Request Failed:** ${err.message}\n\n` +
-          `If you opened this file directly via \`file:///\`, your browser's CORS security policy may block direct calls to \`api.langsearch.com\`. ` +
-          `To fix that, route requests through a local Python Flask proxy or a Cloudflare Worker.`
-        );
+        const errorMsg = `⚠️ **Request Failed:** ${err.message}`;
+        session.messages.push({ role: "ai", text: errorMsg, sources: [] });
+        saveSessions();
+        await appendMessageElement("ai", errorMsg, [], true);
       } finally {
         sendBtn.disabled = false;
         promptInput.focus();
       }
     });
+
+    // Initialize UI on load
+    renderSidebar();
+    renderActiveChat();
   </script>
 </body>
 </html>
