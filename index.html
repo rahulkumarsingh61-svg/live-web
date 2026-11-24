@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Nexus AI — Live Web & Full Sports Intelligence</title>
+  <title>Nexus AI — Live Web, Code & Sports Intelligence</title>
   <style>
     :root {
       --bg: #070b14;
       --sidebar-bg: #0c1220;
-      --panel: rgba(15, 23, 42, 0.88);
+      --panel: rgba(15, 23, 42, 0.9);
       --border: rgba(255, 255, 255, 0.09);
       --text: #f3f4f6;
       --muted: #9ca3af;
@@ -16,7 +16,7 @@
       --accent-2: #818cf8;
       --sports: #22c55e;
       --user-bubble: linear-gradient(135deg, #2563eb, #4f46e5);
-      --ai-bubble: rgba(30, 41, 59, 0.86);
+      --ai-bubble: rgba(30, 41, 59, 0.88);
     }
 
     * {
@@ -39,9 +39,9 @@
       height: 100dvh;
     }
 
-    /* Sidebar */
+    /* Sidebar (Permanent Chat History) */
     aside#sidebar {
-      width: 265px;
+      width: 270px;
       background: var(--sidebar-bg);
       border-right: 1px solid var(--border);
       display: flex;
@@ -92,6 +92,9 @@
       letter-spacing: 0.8px;
       color: var(--muted);
       font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     #historyList {
@@ -114,7 +117,7 @@
       color: var(--muted);
       font-size: 0.85rem;
       transition: 0.15s;
-      gap: 8px;
+      gap: 6px;
     }
 
     .history-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text); }
@@ -127,18 +130,25 @@
       flex: 1;
     }
 
-    .delete-chat-btn {
+    .history-actions {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .icon-mini-btn {
       background: transparent;
       border: none;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       cursor: pointer;
-      padding: 2px 5px;
+      padding: 3px 5px;
       border-radius: 6px;
-      opacity: 0.7;
+      opacity: 0.75;
     }
 
-    .delete-chat-btn:hover { color: #f87171; background: rgba(248, 113, 113, 0.12); opacity: 1; }
+    .icon-mini-btn:hover { color: var(--accent); background: rgba(56, 189, 248, 0.12); opacity: 1; }
+    .icon-mini-btn.del:hover { color: #f87171; background: rgba(248, 113, 113, 0.12); }
 
     .sidebar-footer {
       padding: 12px 14px;
@@ -228,6 +238,7 @@
       display: flex;
       gap: 8px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     select, .pill-toggle {
@@ -271,7 +282,7 @@
     .welcome {
       text-align: center;
       margin: auto;
-      max-width: 600px;
+      max-width: 620px;
       padding: 20px 12px;
     }
 
@@ -359,6 +370,88 @@
       border: 1px solid var(--border);
       border-bottom-left-radius: 4px;
       backdrop-filter: blur(10px);
+    }
+
+    /* Message Footer Action Bar */
+    .msg-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      padding-left: 4px;
+    }
+
+    .copy-msg-btn {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .copy-msg-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Code Blocks with Copy Button */
+    .code-wrapper {
+      margin: 12px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      background: #060a12;
+      white-space: normal;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 14px;
+      background: rgba(30, 41, 59, 0.9);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .copy-code-btn {
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #e0f2fe;
+      padding: 4px 10px;
+      border-radius: 7px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: none;
+      transition: 0.2s;
+    }
+
+    .copy-code-btn:hover {
+      background: rgba(56, 189, 248, 0.28);
+    }
+
+    .copy-code-btn.copied {
+      background: rgba(34, 197, 94, 0.22);
+      border-color: #22c55e;
+      color: #86efac;
+    }
+
+    .code-wrapper pre {
+      padding: 14px;
+      overflow-x: auto;
+      margin: 0;
+      font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: #e2e8f0;
+      white-space: pre;
     }
 
     .typing-cursor::after {
@@ -464,6 +557,7 @@
       margin: 0 auto;
       display: flex;
       gap: 8px;
+      align-items: center;
       background: rgba(30, 41, 59, 0.9);
       border: 1px solid var(--border);
       border-radius: 26px;
@@ -485,6 +579,35 @@
       color: var(--text);
       font-size: 16px;
       outline: none;
+    }
+
+    #micBtn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: 0.2s;
+      flex-shrink: 0;
+    }
+
+    #micBtn:hover { color: var(--accent); border-color: var(--accent); }
+    #micBtn.listening {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #fca5a5;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
     }
 
     button#sendBtn {
@@ -520,9 +643,9 @@
       .bubble { padding: 13px 15px; font-size: 0.92rem; }
     }
 
-    @media (max-width: 440px) {
+    @media (max-width: 480px) {
       header { padding: 10px 12px; }
-      .pill-toggle, select { padding: 6px 10px; font-size: 0.76rem; }
+      .pill-toggle, select { padding: 6px 9px; font-size: 0.74rem; }
       button#sendBtn { padding: 9px 14px; font-size: 0.85rem; }
     }
   </style>
@@ -536,7 +659,10 @@
       <button id="newChatBtn">+ New Chat</button>
       <button id="closeSidebarBtn" title="Close Menu">✕</button>
     </div>
-    <div class="history-label">Saved Chats</div>
+    <div class="history-label">
+      <span>Saved Chats</span>
+      <span id="chatCountBadge">0</span>
+    </div>
     <div id="historyList"></div>
     <div class="sidebar-footer">
       <button id="clearAllBtn">Clear All History</button>
@@ -554,10 +680,19 @@
       </div>
       <div class="controls">
         <button id="sportsToggle" class="pill-toggle" title="Force Flashscore Sports Intelligence">🏏 Live Sports</button>
+        <select id="sportSelect" title="Select Specific Sport">
+          <option value="auto" selected>Auto Sport</option>
+          <option value="cricket">Cricket</option>
+          <option value="football">Football</option>
+          <option value="tennis">Tennis</option>
+          <option value="basketball">Basketball</option>
+          <option value="hockey">Hockey</option>
+          <option value="badminton">Badminton</option>
+        </select>
         <select id="freshnessSelect" title="Web Search Recency">
-          <option value="">Any Time</option>
+          <option value="" selected>Any Time</option>
           <option value="oneDay">Past 24 Hours</option>
-          <option value="oneWeek" selected>Past Week</option>
+          <option value="oneWeek">Past Week</option>
           <option value="oneMonth">Past Month</option>
         </select>
       </div>
@@ -567,7 +702,8 @@
 
     <div class="input-area">
       <form class="input-box" id="chatForm">
-        <input type="text" id="promptInput" placeholder="Ask about scores, scorecards, lineups, standings, teams, players, or the web..." autocomplete="off" required />
+        <input type="text" id="promptInput" placeholder="Ask about scores, scorecards, lineups, standings, code, or the web..." autocomplete="off" required />
+        <button type="button" id="micBtn" title="Voice Input">🎤</button>
         <button type="submit" id="sendBtn">Ask AI</button>
       </form>
     </div>
@@ -580,7 +716,8 @@
     const FLASHSCORE_API_KEY = "ok_92db7785358099d92f49007ceb9d2de6";
     const FLASHSCORE_BASE_URL = "https://flashscore-scraper.omkar.cloud";
 
-    const STORAGE_KEY = "nexus_ai_sessions_v6";
+    // Permanent stable storage key (never wiped by version bumps)
+    const STORAGE_KEY = "nexus_ai_saved_chats";
 
     const sidebar = document.getElementById("sidebar");
     const sidebarOverlay = document.getElementById("sidebarOverlay");
@@ -589,15 +726,18 @@
     const newChatBtn = document.getElementById("newChatBtn");
     const clearAllBtn = document.getElementById("clearAllBtn");
     const historyList = document.getElementById("historyList");
+    const chatCountBadge = document.getElementById("chatCountBadge");
     const chat = document.getElementById("chat");
     const chatForm = document.getElementById("chatForm");
     const promptInput = document.getElementById("promptInput");
+    const micBtn = document.getElementById("micBtn");
     const sendBtn = document.getElementById("sendBtn");
     const freshnessSelect = document.getElementById("freshnessSelect");
+    const sportSelect = document.getElementById("sportSelect");
     const sportsToggle = document.getElementById("sportsToggle");
 
     let sportsMode = false;
-    let sessions = loadSessions();
+    let sessions = loadAndMigrateSessions();
     let currentSessionId = sessions.length ? sessions[0].id : null;
 
     function openSidebar() {
@@ -617,19 +757,108 @@
       sportsToggle.classList.toggle("active", sportsMode);
     });
 
-    function loadSessions() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-      } catch {
-        return [];
+    sportSelect.addEventListener("change", () => {
+      if (sportSelect.value !== "auto" && !sportsMode) {
+        sportsMode = true;
+        sportsToggle.classList.add("active");
       }
+    });
+
+    // Voice Input via Web Speech API
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+
+      micBtn.addEventListener("click", () => {
+        try {
+          micBtn.classList.add("listening");
+          recognition.start();
+        } catch {
+          micBtn.classList.remove("listening");
+        }
+      });
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        promptInput.value = transcript;
+        micBtn.classList.remove("listening");
+        promptInput.focus();
+      };
+
+      recognition.onerror = () => micBtn.classList.remove("listening");
+      recognition.onend = () => micBtn.classList.remove("listening");
+    } else {
+      micBtn.style.display = "none";
+    }
+
+    // Load & automatically rescue any sessions saved under older keys
+    function loadAndMigrateSessions() {
+      let current = [];
+      try {
+        current = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        current = [];
+      }
+
+      const legacyKeys = [
+        "nexus_ai_sessions_v1",
+        "nexus_ai_sessions_v2",
+        "nexus_ai_sessions_v3",
+        "nexus_ai_sessions_v4",
+        "nexus_ai_sessions_v5",
+        "nexus_ai_sessions_v6"
+      ];
+
+      const seenIds = new Set(current.map(s => s.id));
+      let migrated = false;
+
+      for (const oldKey of legacyKeys) {
+        try {
+          const oldData = JSON.parse(localStorage.getItem(oldKey));
+          if (Array.isArray(oldData)) {
+            for (const item of oldData) {
+              if (item && item.id && !seenIds.has(item.id)) {
+                current.push(item);
+                seenIds.add(item.id);
+                migrated = true;
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (migrated) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+        } catch (_) {}
+      }
+
+      return current;
     }
 
     function saveSessions() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+        // Keep up to 40 sessions and trim oversized source payloads so localStorage never overflows
+        const compact = sessions.slice(0, 40).map(s => ({
+          id: s.id,
+          title: s.title,
+          updatedAt: s.updatedAt,
+          messages: s.messages.slice(-40).map(m => ({
+            role: m.role,
+            text: m.text,
+            isSports: Boolean(m.isSports),
+            sources: (m.sources || []).slice(0, 8).map(src => ({
+              name: src.name || "",
+              url: src.url || "",
+              sub: src.sub || ""
+            }))
+          }))
+        }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
       } catch (e) {
-        console.warn("Storage limit reached:", e);
+        console.warn("Storage warning:", e);
       }
     }
 
@@ -684,10 +913,28 @@
       renderActiveChat();
     }
 
+    function exportSessionMarkdown(session, event) {
+      event.stopPropagation();
+      if (!session || !session.messages.length) return;
+      const mdLines = [`# ${session.title}\n`];
+      session.messages.forEach(m => {
+        mdLines.push(`### ${m.role === "user" ? "You" : "Nexus AI"}\n${m.text}\n`);
+      });
+      const blob = new Blob([mdLines.join("\n---\n\n")], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${session.title.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "nexus_chat"}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
     function renderSidebar() {
       historyList.innerHTML = "";
+      chatCountBadge.textContent = sessions.length;
+
       if (!sessions.length) {
-        historyList.innerHTML = `<div style="padding:12px;color:var(--muted);font-size:0.82rem;">No saved chats yet.</div>`;
+        historyList.innerHTML = `<div style="padding:12px;color:var(--muted);font-size:0.82rem;">No saved chats yet. Start asking below!</div>`;
         return;
       }
 
@@ -705,14 +952,26 @@
         titleSpan.className = "history-title";
         titleSpan.textContent = s.title;
 
+        const actions = document.createElement("div");
+        actions.className = "history-actions";
+
+        const expBtn = document.createElement("button");
+        expBtn.className = "icon-mini-btn";
+        expBtn.title = "Export chat as Markdown";
+        expBtn.textContent = "⬇";
+        expBtn.onclick = (e) => exportSessionMarkdown(s, e);
+
         const delBtn = document.createElement("button");
-        delBtn.className = "delete-chat-btn";
+        delBtn.className = "icon-mini-btn del";
         delBtn.title = "Delete chat";
         delBtn.textContent = "🗑";
         delBtn.onclick = (e) => deleteSession(s.id, e);
 
+        actions.appendChild(expBtn);
+        actions.appendChild(delBtn);
+
         item.appendChild(titleSpan);
-        item.appendChild(delBtn);
+        item.appendChild(actions);
         historyList.appendChild(item);
       });
     }
@@ -725,11 +984,11 @@
         chat.innerHTML = `
           <div class="welcome" id="welcomeScreen">
             <h1>Ask Anything, Grounded Live</h1>
-            <p>Full <strong>Flashscore Sports Intelligence</strong> (scores, scorecards, lineups, player stats, H2H, odds, standings, squads &amp; news) + <strong>LangSearch Web AI</strong>.</p>
+            <p>Full <strong>Flashscore Sports Intelligence</strong> (scores, scorecards, lineups, player stats, H2H, odds, standings, squads &amp; news), <strong>Code Generator with Copy Buttons</strong>, and <strong>LangSearch Web AI</strong>.</p>
             <div class="suggestions">
               <button class="suggestion-btn" onclick="quickAsk('India vs New Zealand 1st Test full scorecard and match status')">🏏 India vs NZ Scorecard</button>
               <button class="suggestion-btn" onclick="quickAsk('Premier League standings, top scorers and live football matches')">⚽ Premier League Table & Scores</button>
-              <button class="suggestion-btn" onclick="quickAsk('Real Madrid squad, recent results and upcoming fixtures')">🏟️ Real Madrid Squad & Fixtures</button>
+              <button class="suggestion-btn" onclick="quickAsk('Write a Python script to fetch live cricket scores from an API')">💻 Python API Code Example</button>
               <button class="suggestion-btn" onclick="quickAsk('ATP and WTA tennis rankings')">🎾 ATP / WTA Rankings</button>
             </div>
           </div>
@@ -755,12 +1014,53 @@
         .replace(/>/g, "&gt;");
     }
 
-    function formatBasicMarkdown(text) {
-      return escapeHtml(text)
+    // Rich Markdown + Fenced Code Block Renderer with One-Click Copy Button
+    function renderRichMarkdown(rawText) {
+      const codeBlocks = [];
+      // Extract fenced code blocks ```lang ... ``` before escaping HTML
+      const withPlaceholders = String(rawText).replace(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+        const idx = codeBlocks.length;
+        const cleanLang = (lang || "code").trim();
+        const trimmedCode = code.replace(/\n$/, "");
+        codeBlocks.push({ lang: cleanLang, code: trimmedCode });
+        return `@@CODE_BLOCK_${idx}@@`;
+      });
+
+      let html = escapeHtml(withPlaceholders)
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
         .replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>")
-        .replace(/`([^`]+)`/g, "<code style='background:rgba(0,0,0,0.35);padding:2px 6px;border-radius:5px;'>$1</code>");
+        .replace(/`([^`]+)`/g, "<code style='background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:5px;color:#7dd3fc;'>$1</code>");
+
+      // Restore fenced code blocks with interactive Copy button
+      html = html.replace(/@@CODE_BLOCK_(\d+)@@/g, (_, idxStr) => {
+        const block = codeBlocks[Number(idxStr)];
+        if (!block) return "";
+        const encodedCode = encodeURIComponent(block.code);
+        return `
+          <div class="code-wrapper">
+            <div class="code-header">
+              <span>${escapeHtml(block.lang)}</span>
+              <button type="button" class="copy-code-btn" data-code="${encodedCode}" onclick="copyCodeBlock(this)">Copy Code</button>
+            </div>
+            <pre><code>${escapeHtml(block.code)}</code></pre>
+          </div>
+        `;
+      });
+
+      return html;
     }
+
+    window.copyCodeBlock = function(btn) {
+      const raw = decodeURIComponent(btn.getAttribute("data-code") || "");
+      navigator.clipboard.writeText(raw).then(() => {
+        btn.textContent = "Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "Copy Code";
+          btn.classList.remove("copied");
+        }, 1800);
+      });
+    };
 
     function formatLocalTime(isoStr) {
       if (!isoStr) return "";
@@ -785,16 +1085,16 @@
         element.classList.add("typing-cursor");
 
         function step() {
-          const chunk = Math.max(3, Math.ceil(fullText.length / 180));
+          const chunk = Math.max(4, Math.ceil(fullText.length / 160));
           index = Math.min(index + chunk, fullText.length);
-          element.innerHTML = formatBasicMarkdown(fullText.slice(0, index));
+          element.innerHTML = renderRichMarkdown(fullText.slice(0, index));
           chat.scrollTop = chat.scrollHeight;
 
           if (index < fullText.length) {
             setTimeout(step, speed);
           } else {
             element.classList.remove("typing-cursor");
-            element.innerHTML = formatBasicMarkdown(fullText);
+            element.innerHTML = renderRichMarkdown(fullText);
             chat.scrollTop = chat.scrollHeight;
             resolve();
           }
@@ -843,12 +1143,30 @@
       const bubble = document.createElement("div");
       bubble.className = "bubble";
       wrapper.appendChild(bubble);
+
+      if (role === "ai") {
+        const actions = document.createElement("div");
+        actions.className = "msg-actions";
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "copy-msg-btn";
+        copyBtn.textContent = "Copy Answer";
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(text).then(() => {
+            copyBtn.textContent = "Copied!";
+            setTimeout(() => { copyBtn.textContent = "Copy Answer"; }, 1600);
+          });
+        };
+        actions.appendChild(copyBtn);
+        wrapper.appendChild(actions);
+      }
+
       chat.appendChild(wrapper);
 
       if (animate && role === "ai") {
         await typeWriterEffect(bubble, text);
       } else {
-        bubble.innerHTML = formatBasicMarkdown(text);
+        bubble.innerHTML = renderRichMarkdown(text);
       }
       chat.scrollTop = chat.scrollHeight;
     }
@@ -865,11 +1183,12 @@
     }
 
     function detectSportsQuery(query) {
-      if (sportsMode) return true;
+      if (sportsMode || sportSelect.value !== "auto") return true;
       return /\b(cricket|football|soccer|ipl|t20|odi|test|score|scores|scorecard|match|matches|fixture|fixtures|standings|points table|table|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|world cup|bbl|psl|bpl|cricbuzz|flashscore|espncricinfo|tennis|atp|wta|rankings|basketball|nba|hockey|nhl|f1|formula 1|kabaddi|pkl|badminton|bwf|golf|ufc|boxing|vs|versus|batting|bowling|wickets|innings|goals|halftime|fulltime|lineup|lineups|stats|statistics|squad|transfer|transfers|injury|injuries|odds|h2h|head to head|commentary|top scorers|ind|nz|aus|eng|pak|sa|sl|ban|wi|afg|virat|rohit|bumrah|messi|ronaldo|mbappe|haaland|real madrid|barcelona|arsenal|liverpool|chelsea|manchester|bayern|psg)\b/i.test(query);
     }
 
     function detectSportType(query) {
+      if (sportSelect.value !== "auto") return sportSelect.value;
       const q = query.toLowerCase();
       if (/\b(football|soccer|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|goals|halftime|arsenal|liverpool|chelsea|manchester|real madrid|barcelona|bayern|psg|juventus|inter|milan|messi|ronaldo|mbappe|haaland|xg)\b/.test(q)) {
         return "football";
@@ -934,58 +1253,52 @@
       return terms;
     }
 
-    async function enrichMatchById(matchId, userQuery, headers) {
+    // Check available_tabs first so we NEVER waste Flashscore API calls on unavailable endpoints
+    async function enrichMatchById(matchId, userQuery, headers, availableTabs = null) {
       const q = userQuery.toLowerCase();
       const blocks = [];
 
-      const wantsScorecardOrDetails = /\b(scorecard|detail|details|summary|commentary|report|highlights|ind|nz|vs|1st|2nd|3rd|test|odi|t20|match)\b/.test(q);
-      const wantsStats = /\b(scorecard|stat|stats|statistics|xg|possession|shots|player)\b/.test(q);
-      const wantsLineups = /\b(scorecard|lineup|lineups|xi|playing|squad|starting|bench|missing|injury|injuries)\b/.test(q);
-      const wantsH2HOrStandings = /\b(h2h|head to head|standings|table|points|top scorers|odds|broadcast|tv)\b/.test(q);
+      const details = await fsGet(`/matches/details?match_id=${encodeURIComponent(matchId)}`, headers);
+      const tabs = Array.isArray(details?.available_tabs)
+        ? details.available_tabs
+        : (Array.isArray(availableTabs) ? availableTabs : null);
 
+      if (details) {
+        blocks.push(`[DETAILS]: ${JSON.stringify(details).replace(/https?:\/\/[^\s"]+/g, "").slice(0, 1000)}`);
+      }
+
+      const canCall = (tabName) => !tabs || tabs.includes(tabName);
       const tasks = [];
 
-      if (wantsScorecardOrDetails) {
-        tasks.push(
-          fsGet(`/matches/details?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "details", d })),
-          fsGet(`/matches/summary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "summary", d })),
-          fsGet(`/matches/commentary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "commentary", d })),
-          fsGet(`/matches/report?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "report", d }))
-        );
+      if (canCall("summary")) {
+        tasks.push(fsGet(`/matches/summary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "summary", d })));
       }
-
-      if (wantsStats) {
-        tasks.push(
-          fsGet(`/matches/statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "statistics", d })),
-          fsGet(`/matches/player-statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "player_stats", d })),
-          fsGet(`/matches/point-by-point?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "point_by_point", d }))
-        );
+      if (canCall("statistics") && /\b(scorecard|stat|stats|statistics|xg|possession|shots|detail|details)\b/.test(q)) {
+        tasks.push(fsGet(`/matches/statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "statistics", d })));
       }
-
-      if (wantsLineups) {
-        tasks.push(
-          fsGet(`/matches/lineups?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "lineups", d })),
-          fsGet(`/matches/missing-players?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "missing", d }))
-        );
+      if (canCall("player_statistics") && /\b(scorecard|player|stat|stats|statistics|batting|bowling)\b/.test(q)) {
+        tasks.push(fsGet(`/matches/player-statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "player_stats", d })));
       }
-
-      if (wantsH2HOrStandings) {
-        tasks.push(
-          fsGet(`/matches/h2h?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "h2h", d })),
-          fsGet(`/matches/standings?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "standings", d })),
-          fsGet(`/matches/top-scorers?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "scorers", d })),
-          fsGet(`/matches/odds?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "odds", d })),
-          fsGet(`/matches/broadcasts?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "broadcasts", d }))
-        );
+      if (canCall("lineups") && /\b(scorecard|lineup|lineups|xi|playing|squad|starting|bench)\b/.test(q)) {
+        tasks.push(fsGet(`/matches/lineups?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "lineups", d })));
+      }
+      if (canCall("commentary") && /\b(commentary|ball|minute|live|scorecard)\b/.test(q)) {
+        tasks.push(fsGet(`/matches/commentary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "commentary", d })));
+      }
+      if (canCall("h2h") && /\b(h2h|head to head|history)\b/.test(q)) {
+        tasks.push(fsGet(`/matches/h2h?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "h2h", d })));
+      }
+      if (canCall("standings") && /\b(standings|table|points)\b/.test(q)) {
+        tasks.push(fsGet(`/matches/standings?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "standings", d })));
+      }
+      if (canCall("odds") && /\b(odds|betting|price)\b/.test(q)) {
+        tasks.push(fsGet(`/matches/odds?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "odds", d })));
       }
 
       const settled = await Promise.all(tasks);
-
       for (const item of settled) {
         if (!item.d) continue;
-        const compactJson = JSON.stringify(item.d)
-          .replace(/https?:\/\/[^\s"]+/g, "")
-          .slice(0, 1200);
+        const compactJson = JSON.stringify(item.d).replace(/https?:\/\/[^\s"]+/g, "").slice(0, 1100);
         if (compactJson && compactJson !== "{}" && compactJson !== "[]") {
           blocks.push(`[${item.key.toUpperCase()}]: ${compactJson}`);
         }
@@ -1044,7 +1357,7 @@
         }
       }
 
-      // C. Search Teams, Players, or Competitions (/search + /teams/* + /players/* + /tournaments/*)
+      // C. Search Teams, Players, or Competitions
       const searchTerms = extractSearchTerms(userQuery);
       let foundMatchesFromSearch = [];
 
@@ -1074,13 +1387,12 @@
 
           if (entType.includes("player")) {
             statusEl.querySelector("span").textContent = `Fetching player profile & stats for ${entName}...`;
-            const [pDet, pCar, pInj, pNews] = await Promise.all([
+            const [pDet, pCar, pInj] = await Promise.all([
               fsGet(`/players/details?player_id=${encodeURIComponent(entId)}`, headers),
               fsGet(`/players/career?player_id=${encodeURIComponent(entId)}`, headers),
-              fsGet(`/players/injuries?player_id=${encodeURIComponent(entId)}`, headers),
-              fsGet(`/players/news?player_id=${encodeURIComponent(entId)}`, headers)
+              fsGet(`/players/injuries?player_id=${encodeURIComponent(entId)}`, headers)
             ]);
-            contextChunks.push(`PLAYER (${entName}):\nDetails: ${JSON.stringify(pDet).slice(0, 900)}\nCareer: ${JSON.stringify(pCar).slice(0, 900)}\nInjuries: ${JSON.stringify(pInj).slice(0, 500)}\nNews: ${JSON.stringify(pNews).slice(0, 500)}`);
+            contextChunks.push(`PLAYER (${entName}):\nDetails: ${JSON.stringify(pDet).slice(0, 900)}\nCareer: ${JSON.stringify(pCar).slice(0, 900)}\nInjuries: ${JSON.stringify(pInj).slice(0, 500)}`);
             cards.push({
               name: entName,
               sub: "Player Profile & Career",
@@ -1143,6 +1455,7 @@
 
               const matchObj = {
                 id: m.id,
+                availableTabs: m.available_tabs || null,
                 name: `${home} ${hScore} - ${aScore} ${away}`,
                 sub: `${comp} • ${stage}${localTime ? " • " + localTime : ""}`,
                 url: m.link || ent.link || "https://www.flashscore.com/",
@@ -1165,9 +1478,9 @@
         }
       }
 
-      // D. Live Matches & Today's Matches (/matches?status=live and /matches?day=0)
+      // D. Live Matches & Today's Matches
       statusEl.querySelector("span").textContent = `Checking live ${sport} scoreboard on Flashscore...`;
-      let dayData = await fsGet(`/matches?sport=${sport}&day=0&status=live`, headers);
+      let dayData = await fsGet(`/matches/live?sport=${sport}`, headers);
       if (!dayData || !dayData.match_count) {
         dayData = await fsGet(`/matches?sport=${sport}&day=0`, headers);
       }
@@ -1200,6 +1513,7 @@
 
           dayMatches.push({
             id: m.id,
+            availableTabs: m.available_tabs || null,
             priority,
             name: `${home} ${hScore} - ${aScore} ${away}`,
             sub: `${compName} • ${stage}${localTime ? " • " + localTime : ""}`,
@@ -1220,15 +1534,13 @@
         }
       }
 
-      // E. Enrich top 2 relevant matches with deep scorecard/summary/stats/lineups/H2H/odds
-      const topMatches = combinedMatches.slice(0, 12);
-      for (let i = 0; i < Math.min(2, topMatches.length); i++) {
-        if (topMatches[i].id) {
-          statusEl.querySelector("span").textContent = `Loading detailed scorecard & stats for ${topMatches[i].name}...`;
-          const deepInfo = await enrichMatchById(topMatches[i].id, userQuery, headers);
-          if (deepInfo) {
-            topMatches[i].text += `\n${deepInfo}`;
-          }
+      // E. Enrich top relevant match using available_tabs
+      const topMatches = combinedMatches.slice(0, 10);
+      if (topMatches.length > 0 && topMatches[0].id && foundSpecificEntityMatch) {
+        statusEl.querySelector("span").textContent = `Loading detailed scorecard & stats for ${topMatches[0].name}...`;
+        const deepInfo = await enrichMatchById(topMatches[0].id, userQuery, headers, topMatches[0].availableTabs);
+        if (deepInfo) {
+          topMatches[0].text += `\n${deepInfo}`;
         }
       }
 
@@ -1239,29 +1551,22 @@
         );
       }
 
-      // F. Hybrid Live Sports Web Backup: If user asked for a specific series/team (e.g. "India vs NZ")
-      // and Flashscore didn't return a direct entity match, pull live scorecard pages via LangSearch too!
+      // F. Broad Hybrid Sports Web Backup (no oneWeek/strict domain lock so bilateral series & scorecards always resolve)
       if (searchTerms.length > 0 && !foundSpecificEntityMatch) {
-        statusEl.querySelector("span").textContent = `Augmenting with live sports scorecard search...`;
+        statusEl.querySelector("span").textContent = `Searching live sports scorecard & series archives...`;
         try {
-          const webSports = await searchLangSearch(`${userQuery} live scorecard stats`, "oneWeek", [
-            "espncricinfo.com",
-            "cricbuzz.com",
-            "flashscore.com",
-            "espn.com",
-            "bbc.com"
-          ]);
+          const webSports = await searchLangSearch(`${userQuery} scorecard result schedule`, "", null);
           if (webSports.length) {
             const webSnippetBlock = webSports.slice(0, 4).map((r, idx) => {
-              const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 900);
+              const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 1000);
               finalCards.unshift({
                 name: r.name,
                 sub: "Live Sports Web Scorecard",
                 url: r.url
               });
-              return `[Live Sports Source ${idx + 1}] ${r.name}: ${body}`;
+              return `[Sports Source ${idx + 1}] ${r.name}: ${body}`;
             }).join("\n\n");
-            contextChunks.unshift(`LIVE SPORTS SCORECARD & SERIES DATA:\n${webSnippetBlock}`);
+            contextChunks.unshift(`SPORTS SCORECARD & SERIES DATA:\n${webSnippetBlock}`);
           }
         } catch (_) {}
       }
@@ -1304,7 +1609,7 @@
       return data?.data?.webPages?.value || [];
     }
 
-    async function generateGroundedAnswer(userQuery, payloadData, isSports) {
+    async function generateGroundedAnswer(userQuery, payloadData, isSports, recentHistory = []) {
       let context = "";
       if (isSports) {
         context = payloadData.contextText;
@@ -1324,12 +1629,17 @@
 
       const systemPrompt = isSports
         ? "You are Nexus AI, a complete sports intelligence assistant. Answer thoroughly using ONLY the provided Flashscore & live sports data. Include exact scores, innings/period breakdowns, match status, local start times, full batting/bowling or match statistics, lineups, standings, H2H, odds, or news as requested. Use clean bullet points and **bold** headings. Never cut off mid-sentence."
-        : "You are Nexus AI, a live web search assistant. Answer the user's question clearly and completely using ONLY the provided search results. Format with clean bullet points and **bold** highlights. Never cut off mid-sentence.";
+        : "You are Nexus AI, a live web search & coding assistant. Answer clearly and completely using the provided live search results (and your coding knowledge when asked to write code). Wrap all code snippets in triple backticks ```language so the user gets a copy button. Use clean bullet points and **bold** highlights.";
+
+      const historyMessages = recentHistory.slice(-4).map(m => ({
+        role: m.role === "ai" ? "assistant" : "user",
+        content: m.text.slice(0, 800)
+      }));
 
       try {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 16000);
-        const res = await fetch("https://text.pollinations.ai/openai", {
+        const res = await fetch("[https://text.pollinations.ai/openai](https://text.pollinations.ai/openai)", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           signal: controller.signal,
@@ -1337,6 +1647,7 @@
             model: "openai",
             messages: [
               { role: "system", content: systemPrompt },
+              ...historyMessages,
               { role: "user", content: `Question: ${userQuery}\n\nData:\n${context.slice(0, 6000)}` }
             ]
           })
@@ -1354,7 +1665,7 @@
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 14000);
         const shortPrompt = `${systemPrompt}\n\nQuestion: ${userQuery}\n\nData:\n${context.slice(0, 2200)}`;
-        const getRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent(shortPrompt)}`, {
+        const getRes = await fetch(`[https://text.pollinations.ai/$](https://text.pollinations.ai/$){encodeURIComponent(shortPrompt)}`, {
           signal: controller.signal
         });
         clearTimeout(timer);
@@ -1387,6 +1698,8 @@
         session.title = query.slice(0, 42);
       }
 
+      const priorHistory = [...session.messages];
+
       promptInput.value = "";
       sendBtn.disabled = true;
 
@@ -1396,9 +1709,9 @@
       renderSidebar();
       await appendMessageElement("user", query, [], false);
 
-      // Direct friendly response for greetings without triggering web search spam
+      // Direct friendly response for greetings
       if (/^(hi|hello|hey|namaste|good morning|good evening|who are you|what is your name)[!?. ]*$/i.test(query)) {
-        const greetingReply = "Hello! I'm **Nexus AI**. Ask me anything about **live scores, full scorecards, lineups, standings, player stats, or fixtures** (powered by Flashscore), or ask any **real-time web question** (powered by LangSearch).";
+        const greetingReply = "Hello! I'm **Nexus AI**. Ask me anything about **live scores, full scorecards, lineups, standings, player stats, or fixtures** (powered by Flashscore), ask me to **write code** (with one-click copy buttons), or ask any **real-time web question** (powered by LangSearch).";
         session.messages.push({ role: "ai", text: greetingReply, sources: [], isSports: false });
         saveSessions();
         await appendMessageElement("ai", greetingReply, [], true, false);
@@ -1421,7 +1734,7 @@
         if (isSports) {
           const sportsReport = await fetchComprehensiveSportsData(query, statusEl);
           statusEl.querySelector("span").textContent = "Synthesizing complete sports report...";
-          answer = await generateGroundedAnswer(query, sportsReport, true);
+          answer = await generateGroundedAnswer(query, sportsReport, true, priorHistory);
           slimSources = sportsReport.cards.map(c => ({
             name: c.name,
             url: c.url,
@@ -1430,7 +1743,7 @@
         } else {
           const webResults = await searchLangSearch(query);
           statusEl.querySelector("span").textContent = `Synthesizing ${webResults.length} web sources...`;
-          answer = await generateGroundedAnswer(query, webResults, false);
+          answer = await generateGroundedAnswer(query, webResults, false, priorHistory);
           slimSources = webResults.map(r => ({
             name: r.name,
             url: r.url,
