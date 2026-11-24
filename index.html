@@ -2,1909 +2,692 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nexus AI — Live Web, Code & Sports Intelligence</title>
   <style>
     :root {
-      --bg: #070b14;
-      --sidebar-bg: #0c1220;
-      --panel: rgba(15, 23, 42, 0.9);
-      --border: rgba(255, 255, 255, 0.09);
-      --text: #f3f4f6;
-      --muted: #9ca3af;
+      --bg-main: #090d16;
+      --bg-sidebar: #0e1422;
+      --bg-card: #131b2e;
+      --bg-input: #172036;
+      --border: #24304d;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
       --accent: #38bdf8;
-      --accent-2: #818cf8;
-      --sports: #22c55e;
-      --user-bubble: linear-gradient(135deg, #2563eb, #4f46e5);
-      --ai-bubble: rgba(30, 41, 59, 0.88);
+      --accent-btn: #2563eb;
+      --green: #4ade80;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    html, body {
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-      background: radial-gradient(circle at 20% 10%, #1e1b4b 0%, var(--bg) 50%, #04070d 100%);
-      color: var(--text);
-    }
-
+    * { box-sizing: border-box; }
     body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
       display: flex;
-      height: 100dvh;
+      height: 100vh;
+      overflow: hidden;
     }
-
-    /* Sidebar (Permanent Chat History) */
-    aside#sidebar {
+    /* Sidebar */
+    .sidebar {
       width: 270px;
-      background: var(--sidebar-bg);
+      background: var(--bg-sidebar);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      transition: transform 0.25s ease;
-      z-index: 30;
-      flex-shrink: 0;
-      min-height: 0;
-    }
-
-    .sidebar-header {
       padding: 14px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      gap: 8px;
+      gap: 12px;
     }
-
-    #newChatBtn {
-      flex: 1;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(99, 102, 241, 0.18));
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 0.88rem;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    #newChatBtn:hover { background: rgba(56, 189, 248, 0.28); }
-
-    #closeSidebarBtn {
-      display: none;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 0 12px;
-      font-size: 1.1rem;
-      cursor: pointer;
-    }
-
-    .history-label {
-      padding: 12px 16px 6px;
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--muted);
-      font-weight: 600;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    #historyList {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      padding: 6px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .history-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      color: var(--muted);
-      font-size: 0.85rem;
-      transition: 0.15s;
-      gap: 6px;
-    }
-
-    .history-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text); }
-    .history-item.active { background: rgba(56, 189, 248, 0.14); color: var(--accent); font-weight: 600; }
-
-    .history-title {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
-    }
-
-    .history-actions {
-      display: flex;
-      gap: 2px;
-      flex-shrink: 0;
-    }
-
-    .icon-mini-btn {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-size: 0.88rem;
-      cursor: pointer;
-      padding: 3px 5px;
-      border-radius: 6px;
-      opacity: 0.75;
-    }
-
-    .icon-mini-btn:hover { color: var(--accent); background: rgba(56, 189, 248, 0.12); opacity: 1; }
-    .icon-mini-btn.del:hover { color: #f87171; background: rgba(248, 113, 113, 0.12); }
-
-    .sidebar-footer {
-      padding: 12px 14px;
-      border-top: 1px solid var(--border);
-    }
-
-    #clearAllBtn {
-      width: 100%;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 8px;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    #clearAllBtn:hover { border-color: #f87171; color: #f87171; }
-
-    #sidebarOverlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 25;
-      backdrop-filter: blur(2px);
-    }
-
-    /* Main Workspace */
-    .main-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      min-height: 0;
-      height: 100dvh;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 18px;
-      background: var(--panel);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
-      gap: 10px;
-      flex-wrap: wrap;
-      flex-shrink: 0;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #menuBtn {
-      display: none;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 6px 10px;
-      font-size: 1.1rem;
-      cursor: pointer;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-
-    .logo-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      box-shadow: 0 0 12px var(--accent);
-    }
-
-    .controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    select, .pill-toggle {
-      background: rgba(15, 23, 42, 0.92);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 7px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      outline: none;
-      transition: 0.2s;
-      white-space: nowrap;
-    }
-
-    select:hover, .pill-toggle:hover { border-color: var(--accent); }
-
-    .pill-toggle.active {
-      background: rgba(34, 197, 94, 0.18);
-      border-color: var(--sports);
-      color: #4ade80;
-      font-weight: 600;
-    }
-
-    /* Chat Area */
-    #chat {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 20px 18px 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      width: 100%;
-      max-width: 920px;
-      margin: 0 auto;
-      scroll-behavior: smooth;
-    }
-
-    .welcome {
-      text-align: center;
-      margin: auto;
-      max-width: 620px;
-      padding: 20px 12px;
-    }
-
-    .welcome h1 {
-      font-size: clamp(1.55rem, 4vw, 2.1rem);
-      background: linear-gradient(90deg, #38bdf8, #a5b4fc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 10px;
-    }
-
-    .welcome p {
-      color: var(--muted);
-      font-size: 0.94rem;
-      line-height: 1.55;
-      margin-bottom: 22px;
-    }
-
-    .suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-    }
-
-    .suggestion-btn {
-      background: rgba(30, 41, 59, 0.78);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 9px 14px;
-      border-radius: 18px;
-      font-size: 0.83rem;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .suggestion-btn:hover {
-      background: rgba(56, 189, 248, 0.16);
-      border-color: var(--accent);
-      transform: translateY(-1px);
-    }
-
-    /* Messages */
-    .msg {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      flex-shrink: 0;
-      animation: fadeIn 0.2s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .msg.user { align-items: flex-end; }
-    .msg.ai { align-items: flex-start; }
-
-    .bubble {
-      padding: 15px 18px;
-      border-radius: 18px;
-      line-height: 1.65;
-      font-size: 0.95rem;
-      white-space: pre-wrap;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-      max-width: 100%;
-      height: auto;
-      overflow: visible;
-    }
-
-    .msg.user .bubble {
-      max-width: 82%;
-      background: var(--user-bubble);
-      border-bottom-right-radius: 4px;
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.25);
-    }
-
-    .msg.ai .bubble {
-      width: 100%;
-      background: var(--ai-bubble);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-      backdrop-filter: blur(10px);
-    }
-
-    .msg-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 6px;
-      padding-left: 4px;
-    }
-
-    .copy-msg-btn {
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 0.75rem;
-      padding: 4px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .copy-msg-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    /* Code Blocks with Copy Button */
-    .code-wrapper {
-      margin: 12px 0;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      background: #060a12;
-      white-space: normal;
-    }
-
-    .code-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 7px 14px;
-      background: rgba(30, 41, 59, 0.9);
-      border-bottom: 1px solid var(--border);
-      font-size: 0.76rem;
-      color: var(--accent);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .copy-code-btn {
-      background: rgba(56, 189, 248, 0.14);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      color: #e0f2fe;
-      padding: 4px 10px;
-      border-radius: 7px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-transform: none;
-      transition: 0.2s;
-    }
-
-    .copy-code-btn:hover {
-      background: rgba(56, 189, 248, 0.28);
-    }
-
-    .copy-code-btn.copied {
-      background: rgba(34, 197, 94, 0.22);
-      border-color: #22c55e;
-      color: #86efac;
-    }
-
-    .code-wrapper pre {
-      padding: 14px;
-      overflow-x: auto;
-      margin: 0;
-      font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
-      font-size: 0.85rem;
-      line-height: 1.5;
-      color: #e2e8f0;
-      white-space: pre;
-    }
-
-    .typing-cursor::after {
-      content: "▍";
-      color: var(--accent);
-      margin-left: 2px;
-      animation: blink 0.8s infinite;
-    }
-
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
-    }
-
-    /* Sources / Match Cards Strip */
-    .sources-title {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--accent);
-      margin-bottom: 7px;
-      font-weight: 600;
-    }
-
-    .sources-title.sports-badge {
-      color: #4ade80;
-    }
-
-    .sources-grid {
-      display: flex;
-      gap: 8px;
-      width: 100%;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      margin-bottom: 8px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .source-card {
-      min-width: 195px;
-      max-width: 235px;
-      background: rgba(15, 23, 42, 0.92);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 9px 12px;
-      text-decoration: none;
-      color: var(--text);
-      transition: 0.2s;
-      flex-shrink: 0;
-    }
-
-    .source-card:hover { border-color: var(--accent); background: rgba(30, 41, 59, 0.98); }
-
-    .source-domain {
-      font-size: 0.7rem;
-      color: var(--accent);
-      margin-bottom: 3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .source-name {
-      font-size: 0.79rem;
-      font-weight: 600;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      line-height: 1.3;
-    }
-
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--accent);
-      font-size: 0.85rem;
-      padding: 6px 10px;
-      flex-shrink: 0;
-    }
-
-    .spinner {
-      width: 15px;
-      height: 15px;
-      border: 2px solid rgba(56, 189, 248, 0.3);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Bottom Input Bar */
-    .input-area {
-      flex-shrink: 0;
-      padding: 12px 14px calc(14px + env(safe-area-inset-bottom));
-      background: linear-gradient(to top, rgba(7, 11, 20, 0.98), rgba(7, 11, 20, 0.82));
-    }
-
-    .input-box {
-      max-width: 920px;
-      margin: 0 auto;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      background: rgba(30, 41, 59, 0.9);
-      border: 1px solid var(--border);
-      border-radius: 26px;
-      padding: 7px 8px 7px 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-      transition: 0.2s;
-    }
-
-    .input-box:focus-within {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-    }
-
-    input[type="text"] {
-      flex: 1;
-      min-width: 0;
-      background: transparent;
-      border: none;
-      color: var(--text);
-      font-size: 16px;
-      outline: none;
-    }
-
-    #micBtn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      transition: 0.2s;
-      flex-shrink: 0;
-    }
-
-    #micBtn:hover { color: var(--accent); border-color: var(--accent); }
-    #micBtn.listening {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: #ef4444;
-      color: #fca5a5;
-      animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.08); }
-    }
-
-    button#sendBtn {
-      background: linear-gradient(135deg, var(--accent), #2563eb);
+    .new-chat-btn {
+      background: var(--accent-btn);
       color: #fff;
       border: none;
-      border-radius: 20px;
-      padding: 10px 18px;
+      border-radius: 10px;
+      padding: 11px;
       font-weight: 600;
-      font-size: 0.9rem;
       cursor: pointer;
-      transition: 0.2s;
-      flex-shrink: 0;
+      font-size: 0.92rem;
     }
-
-    button#sendBtn:hover { opacity: 0.92; }
-    button#sendBtn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    @media (max-width: 768px) {
-      aside#sidebar {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        transform: translateX(-100%);
-      }
-
-      aside#sidebar.open { transform: translateX(0); }
-      #sidebarOverlay.open { display: block; }
-      #menuBtn, #closeSidebarBtn { display: inline-flex; align-items: center; justify-content: center; }
-
-      .msg.user .bubble { max-width: 90%; }
-      .bubble { padding: 13px 15px; font-size: 0.92rem; }
+    .new-chat-btn:hover { background: #1d4ed8; }
+    .saved-header {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
     }
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .chat-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 0.84rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      gap: 6px;
+    }
+    .chat-item.active { border-color: var(--accent); }
+    .chat-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    .del-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .del-btn:hover { color: #f87171; }
+    .clear-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+    }
+    .clear-btn:hover { border-color: #f87171; color: #f87171; }
 
-    @media (max-width: 480px) {
-      header { padding: 10px 12px; }
-      .pill-toggle, select { padding: 6px 9px; font-size: 0.74rem; }
-      button#sendBtn { padding: 9px 14px; font-size: 0.85rem; }
+    /* Main Panel */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .topbar {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg-sidebar);
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge {
+      background: rgba(56, 189, 248, 0.14);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    select, .icon-btn {
+      background: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.83rem;
+      cursor: pointer;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .msg {
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 15px 18px;
+      border-radius: 12px;
+      line-height: 1.6;
+      font-size: 0.94rem;
+    }
+    .msg.user {
+      background: #1e293b;
+      border: 1px solid #334155;
+      align-self: flex-end;
+    }
+    .msg.ai {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+    }
+    .engine-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    .engine-sports {
+      background: rgba(74, 222, 128, 0.14);
+      color: var(--green);
+      border: 1px solid rgba(74, 222, 128, 0.35);
+    }
+    .engine-web {
+      background: rgba(56, 189, 248, 0.14);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .sources-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .source-chip {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      max-width: 280px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .copy-btn {
+      margin-top: 10px;
+      background: var(--bg-input);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+    .copy-btn:hover { color: #fff; border-color: var(--accent); }
+
+    /* Input Bar */
+    .input-area {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-sidebar);
+    }
+    .input-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+    }
+    input[type="text"], input[type="password"] {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    input:focus { border-color: var(--accent); }
+    .ask-btn {
+      background: var(--accent-btn);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ask-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Settings Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      width: 92%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal label { font-size: 0.82rem; color: var(--text-muted); }
+    pre {
+      background: #0b1120;
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+    }
+    @media (max-width: 760px) {
+      .sidebar { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <div id="sidebarOverlay"></div>
-
-  <aside id="sidebar">
-    <div class="sidebar-header">
-      <button id="newChatBtn">+ New Chat</button>
-      <button id="closeSidebarBtn" title="Close Menu">✕</button>
+  <aside class="sidebar">
+    <button class="new-chat-btn" onclick="createNewChat()">+ New Chat</button>
+    <div class="saved-header">
+      <span>SAVED CHATS</span>
+      <span id="chatCount">0</span>
     </div>
-    <div class="history-label">
-      <span>Saved Chats</span>
-      <span id="chatCountBadge">0</span>
-    </div>
-    <div id="historyList"></div>
-    <div class="sidebar-footer">
-      <button id="clearAllBtn">Clear All History</button>
-    </div>
+    <div id="chatList" class="chat-list"></div>
+    <button class="clear-btn" onclick="clearAllHistory()">Clear All History</button>
   </aside>
 
-  <div class="main-wrapper">
-    <header>
-      <div class="header-left">
-        <button id="menuBtn" title="Chat History">☰</button>
-        <div class="brand">
-          <div class="logo-dot"></div>
-          <span>Nexus AI</span>
-        </div>
+  <main class="main">
+    <header class="topbar">
+      <div class="brand">
+        <span>Nexus AI</span>
+        <span class="badge">🏏 Live Sports + Web</span>
       </div>
       <div class="controls">
-        <button id="sportsToggle" class="pill-toggle" title="Force Sports Scorecard Mode">🏏 Live Sports</button>
-        <select id="sportSelect" title="Select Specific Sport">
-          <option value="auto" selected>Auto Sport</option>
-          <option value="cricket">Cricket</option>
-          <option value="football">Football</option>
-          <option value="tennis">Tennis</option>
-          <option value="basketball">Basketball</option>
-          <option value="hockey">Hockey</option>
-          <option value="badminton">Badminton</option>
+        <select id="sportFilter">
+          <option value="auto">(Auto Sport)</option>
+          <option value="Cricket">Cricket</option>
+          <option value="Football">Football</option>
+          <option value="Tennis">Tennis</option>
+          <option value="Basketball">Basketball</option>
+          <option value="Hockey">Hockey</option>
+          <option value="Badminton">Badminton</option>
         </select>
-        <select id="freshnessSelect" title="Web Search Recency">
-          <option value="" selected>Any Time</option>
+        <select id="timeFilter">
+          <option value="noLimit">(Any Time)</option>
           <option value="oneDay">Past 24 Hours</option>
           <option value="oneWeek">Past Week</option>
           <option value="oneMonth">Past Month</option>
         </select>
+        <button class="icon-btn" onclick="openSettings()">⚙️ API Keys</button>
       </div>
     </header>
 
-    <main id="chat"></main>
+    <section id="messages" class="messages"></section>
 
-    <div class="input-area">
-      <form class="input-box" id="chatForm">
-        <input type="text" id="promptInput" placeholder="Ask about live scores, wickets, overs, code, or anything on the web..." autocomplete="off" required />
-        <button type="button" id="micBtn" title="Voice Input">🎤</button>
-        <button type="submit" id="sendBtn">Ask AI</button>
-      </form>
+    <footer class="input-area">
+      <div class="input-wrap">
+        <input id="promptInput" type="text" placeholder="Ask about live scores, wickets, overs, code, or anything on the web..." onkeydown="if(event.key==='Enter') sendMessage()" />
+        <button id="askBtn" class="ask-btn" onclick="sendMessage()">Ask AI</button>
+      </div>
+    </footer>
+  </main>
+
+  <!-- API Keys Settings Modal -->
+  <div id="settingsModal" class="modal-backdrop">
+    <div class="modal">
+      <h3 style="margin:0;color:var(--accent);">API Keys Configuration</h3>
+      <p style="margin:0;font-size:0.82rem;color:var(--text-muted);">
+        Gemini API is triggered <strong>ONLY</strong> for sports queries. All other queries use LangSearch.
+      </p>
+      <label>Gemini API Key (Sports Only)</label>
+      <input id="geminiKeyInput" type="password" placeholder="AQ.Ab8RN6... or AIzaSy..." />
+
+      <label>LangSearch API Key (General Web & Code)</label>
+      <input id="langKeyInput" type="password" placeholder="sk-..." />
+
+      <label>Custom Render Cricket-API Key</label>
+      <input id="cricketKeyInput" type="text" placeholder="ck_live_nexus_2026" />
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+        <button class="clear-btn" onclick="closeSettings()">Cancel</button>
+        <button class="new-chat-btn" onclick="saveSettings()">Save Keys</button>
+      </div>
     </div>
   </div>
 
   <script>
-    const LANGSEARCH_API_KEY = "sk-8312c802939e459ba348814af35a41b3";
-    const LANGSEARCH_URL = "https://api.langsearch.com/v1/web-search";
+    // Default Keys (Sports -> Gemini + Render Cricket API | Non-Sports -> LangSearch)
+    const DEFAULT_GEMINI_KEY = "AQ.Ab8RN6KXZgBocqKVptoWh9QKJgG0nxsZeb6vPD9Vee69q6wJPA";
+    const DEFAULT_LANGSEARCH_KEY = "YOUR_LANGSEARCH_API_KEY"; // Paste your LangSearch key here or in ⚙️ API Keys
+    const CRICKET_API_BASE = "https://cricket-api-1-hmcw.onrender.com";
+    const DEFAULT_CRICKET_KEY = "ck_live_nexus_2026";
 
-    const FLASHSCORE_API_KEY = "ok_92db7785358099d92f49007ceb9d2de6";
-    const FLASHSCORE_BASE_URL = "https://flashscore-scraper.omkar.cloud";
+    let chats = JSON.parse(localStorage.getItem("nexus_chats_v2") || "[]");
+    let currentChatId = null;
 
-    const STORAGE_KEY = "nexus_ai_saved_chats";
-
-    const sidebar = document.getElementById("sidebar");
-    const sidebarOverlay = document.getElementById("sidebarOverlay");
-    const menuBtn = document.getElementById("menuBtn");
-    const closeSidebarBtn = document.getElementById("closeSidebarBtn");
-    const newChatBtn = document.getElementById("newChatBtn");
-    const clearAllBtn = document.getElementById("clearAllBtn");
-    const historyList = document.getElementById("historyList");
-    const chatCountBadge = document.getElementById("chatCountBadge");
-    const chat = document.getElementById("chat");
-    const chatForm = document.getElementById("chatForm");
-    const promptInput = document.getElementById("promptInput");
-    const micBtn = document.getElementById("micBtn");
-    const sendBtn = document.getElementById("sendBtn");
-    const freshnessSelect = document.getElementById("freshnessSelect");
-    const sportSelect = document.getElementById("sportSelect");
-    const sportsToggle = document.getElementById("sportsToggle");
-
-    let sportsMode = false;
-    let sessions = loadAndMigrateSessions();
-    let currentSessionId = sessions.length ? sessions[0].id : null;
-
-    function openSidebar() {
-      sidebar.classList.add("open");
-      sidebarOverlay.classList.add("open");
-    }
-    function closeSidebar() {
-      sidebar.classList.remove("open");
-      sidebarOverlay.classList.remove("open");
-    }
-    menuBtn.addEventListener("click", openSidebar);
-    closeSidebarBtn.addEventListener("click", closeSidebar);
-    sidebarOverlay.addEventListener("click", closeSidebar);
-
-    sportsToggle.addEventListener("click", () => {
-      sportsMode = !sportsMode;
-      sportsToggle.classList.toggle("active", sportsMode);
-    });
-
-    sportSelect.addEventListener("change", () => {
-      if (sportSelect.value !== "auto" && !sportsMode) {
-        sportsMode = true;
-        sportsToggle.classList.add("active");
-      }
-    });
-
-    // Voice Input
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.lang = "en-US";
-      recognition.interimResults = false;
-
-      micBtn.addEventListener("click", () => {
-        try {
-          micBtn.classList.add("listening");
-          recognition.start();
-        } catch {
-          micBtn.classList.remove("listening");
-        }
-      });
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        promptInput.value = transcript;
-        micBtn.classList.remove("listening");
-        promptInput.focus();
+    function getKeys() {
+      return {
+        gemini: localStorage.getItem("nexus_gemini_key") || DEFAULT_GEMINI_KEY,
+        langsearch: localStorage.getItem("nexus_langsearch_key") || DEFAULT_LANGSEARCH_KEY,
+        cricket: localStorage.getItem("nexus_cricket_key") || DEFAULT_CRICKET_KEY
       };
-
-      recognition.onerror = () => micBtn.classList.remove("listening");
-      recognition.onend = () => micBtn.classList.remove("listening");
-    } else {
-      micBtn.style.display = "none";
     }
 
-    function loadAndMigrateSessions() {
-      let current = [];
+    function openSettings() {
+      const k = getKeys();
+      document.getElementById("geminiKeyInput").value = k.gemini;
+      document.getElementById("langKeyInput").value = k.langsearch === "YOUR_LANGSEARCH_API_KEY" ? "" : k.langsearch;
+      document.getElementById("cricketKeyInput").value = k.cricket;
+      document.getElementById("settingsModal").style.display = "flex";
+    }
+
+    function closeSettings() {
+      document.getElementById("settingsModal").style.display = "none";
+    }
+
+    function saveSettings() {
+      const g = document.getElementById("geminiKeyInput").value.trim();
+      const l = document.getElementById("langKeyInput").value.trim();
+      const c = document.getElementById("cricketKeyInput").value.trim();
+      if (g) localStorage.setItem("nexus_gemini_key", g);
+      if (l) localStorage.setItem("nexus_langsearch_key", l);
+      if (c) localStorage.setItem("nexus_cricket_key", c);
+      closeSettings();
+    }
+
+    // 1. Detect if the user's prompt is a Sports Query
+    function isSportsQuery(text) {
+      const selectedSport = document.getElementById("sportFilter").value;
+      if (selectedSport !== "auto") return true;
+
+      const sportsRegex = /\b(cricket|ipl|t20|t20i|odi|test match|sheffield shield|big bash|bbl|psl|cpl|world cup|ashes|wicket|wickets|overs|runs|runs needed|target|batting|bowling|scorecard|innings|kohli|rohit|bumrah|dhoni|gill|hardik|suryakumar|pant|jadeja|babar|root|smith|cummins|starc|williamson|football|soccer|premier league|epl|laliga|bundesliga|serie a|ligue 1|champions league|ucl|isl|messi|ronaldo|mbappe|haaland|goal|goals|lineup|lineups|fixture|fixtures|live score|live scores|match score|standings|points table|tennis|atp|wta|grand slam|wimbledon|nba|basketball|hockey|badminton|bwf)\b/i;
+      return sportsRegex.test(text);
+    }
+
+    // 2. Sports Handler -> Uses Gemini API Key + Your Render Cricket API
+    async function fetchSportsWithGemini(userPrompt) {
+      const keys = getKeys();
+      const sportChoice = document.getElementById("sportFilter").value;
+      let renderLiveFeed = "";
+
+      // Pull live scores from your Render Cricket-API in parallel
       try {
-        current = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-      } catch {
-        current = [];
-      }
-
-      const legacyKeys = [
-        "nexus_ai_sessions_v1",
-        "nexus_ai_sessions_v2",
-        "nexus_ai_sessions_v3",
-        "nexus_ai_sessions_v4",
-        "nexus_ai_sessions_v5",
-        "nexus_ai_sessions_v6"
-      ];
-
-      const seenIds = new Set(current.map(s => s.id));
-      let migrated = false;
-
-      for (const oldKey of legacyKeys) {
-        try {
-          const oldData = JSON.parse(localStorage.getItem(oldKey));
-          if (Array.isArray(oldData)) {
-            for (const item of oldData) {
-              if (item && item.id && !seenIds.has(item.id)) {
-                current.push(item);
-                seenIds.add(item.id);
-                migrated = true;
-              }
-            }
+        const res = await fetch(`${CRICKET_API_BASE}/live`, {
+          headers: { "X-API-Key": keys.cricket }
+        });
+        if (res.ok) {
+          const matches = await res.json();
+          if (Array.isArray(matches) && matches.length > 0) {
+            renderLiveFeed = "Live Cricket Feed from Render API:\n" + matches.slice(0, 12).join("\n");
           }
-        } catch (_) {}
-      }
-
-      if (migrated) {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
-        } catch (_) {}
-      }
-
-      return current;
-    }
-
-    function saveSessions() {
-      try {
-        const compact = sessions.slice(0, 40).map(s => ({
-          id: s.id,
-          title: s.title,
-          updatedAt: s.updatedAt,
-          messages: s.messages.slice(-40).map(m => ({
-            role: m.role,
-            text: m.text,
-            isSports: Boolean(m.isSports),
-            sources: (m.sources || []).slice(0, 8).map(src => ({
-              name: src.name || "",
-              url: src.url || "",
-              sub: src.sub || ""
-            }))
-          }))
-        }));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
+        }
       } catch (e) {
-        console.warn("Storage warning:", e);
-      }
-    }
-
-    function createNewSession(firstTitle = "New Chat") {
-      const id = "chat_" + Date.now();
-      const session = {
-        id,
-        title: firstTitle.slice(0, 42),
-        updatedAt: Date.now(),
-        messages: []
-      };
-      sessions.unshift(session);
-      currentSessionId = id;
-      saveSessions();
-      renderSidebar();
-      renderActiveChat();
-      closeSidebar();
-      return session;
-    }
-
-    function getCurrentSession() {
-      return sessions.find(s => s.id === currentSessionId) || null;
-    }
-
-    newChatBtn.addEventListener("click", () => {
-      currentSessionId = null;
-      renderSidebar();
-      renderActiveChat();
-      closeSidebar();
-      promptInput.focus();
-    });
-
-    clearAllBtn.addEventListener("click", () => {
-      if (!sessions.length) return;
-      if (confirm("Delete all saved chats permanently?")) {
-        sessions = [];
-        currentSessionId = null;
-        saveSessions();
-        renderSidebar();
-        renderActiveChat();
-      }
-    });
-
-    function deleteSession(id, event) {
-      event.stopPropagation();
-      sessions = sessions.filter(s => s.id !== id);
-      if (currentSessionId === id) {
-        currentSessionId = sessions.length ? sessions[0].id : null;
-      }
-      saveSessions();
-      renderSidebar();
-      renderActiveChat();
-    }
-
-    function exportSessionMarkdown(session, event) {
-      event.stopPropagation();
-      if (!session || !session.messages.length) return;
-      const mdLines = [`# ${session.title}\n`];
-      session.messages.forEach(m => {
-        mdLines.push(`### ${m.role === "user" ? "You" : "Nexus AI"}\n${m.text}\n`);
-      });
-      const blob = new Blob([mdLines.join("\n---\n\n")], { type: "text/markdown;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${session.title.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "nexus_chat"}.md`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function renderSidebar() {
-      historyList.innerHTML = "";
-      chatCountBadge.textContent = sessions.length;
-
-      if (!sessions.length) {
-        historyList.innerHTML = `<div style="padding:12px;color:var(--muted);font-size:0.82rem;">No saved chats yet. Start asking below!</div>`;
-        return;
+        console.warn("Render API sleeping or skipped:", e);
       }
 
-      sessions.forEach(s => {
-        const item = document.createElement("div");
-        item.className = "history-item" + (s.id === currentSessionId ? " active" : "");
-        item.onclick = () => {
-          currentSessionId = s.id;
-          renderSidebar();
-          renderActiveChat();
-          closeSidebar();
-        };
+      const systemPrompt = `You are Nexus AI's Live Sports & Scorecard Analyst.
+Sport Filter: ${sportChoice === "auto" ? "Detect automatically" : sportChoice}
+Current Date: ${new Date().toDateString()}
 
-        const titleSpan = document.createElement("span");
-        titleSpan.className = "history-title";
-        titleSpan.textContent = s.title;
+Rules:
+- Use Google Search grounding AND the live feed below to provide exact live scores, wickets, overs, batting & bowling figures, runs needed, and match status.
+- Format cleanly with bullet points and bold labels (**Match Summary & Status**, **Batting & Bowling Highlights**, **Other Active Matches / Standings**).
+- Never guess scores or stats that aren't verified.
 
-        const actions = document.createElement("div");
-        actions.className = "history-actions";
+${renderLiveFeed}`;
 
-        const expBtn = document.createElement("button");
-        expBtn.className = "icon-mini-btn";
-        expBtn.title = "Export chat as Markdown";
-        expBtn.textContent = "⬇";
-        expBtn.onclick = (e) => exportSessionMarkdown(s, e);
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "icon-mini-btn del";
-        delBtn.title = "Delete chat";
-        delBtn.textContent = "🗑";
-        delBtn.onclick = (e) => deleteSession(s.id, e);
-
-        actions.appendChild(expBtn);
-        actions.appendChild(delBtn);
-
-        item.appendChild(titleSpan);
-        item.appendChild(actions);
-        historyList.appendChild(item);
-      });
-    }
-
-    function renderActiveChat() {
-      chat.innerHTML = "";
-      const session = getCurrentSession();
-
-      if (!session || !session.messages.length) {
-        chat.innerHTML = `
-          <div class="welcome" id="welcomeScreen">
-            <h1>Ask Anything, Grounded Live</h1>
-            <p>Full <strong>Cricket &amp; Sports Scorecards</strong> (runs, wickets, overs, runs needed, batting/bowling cards, lineups, stats &amp; tables), <strong>Code Generator with Copy Buttons</strong>, and <strong>Live Web AI</strong>.</p>
-            <div class="suggestions">
-              <button class="suggestion-btn" onclick="quickAsk('Western Australia vs Tasmania full scorecard, wickets, overs, batting and runs needed')">🏏 WA vs Tasmania Full Scorecard</button>
-              <button class="suggestion-btn" onclick="quickAsk('Premier League standings, top scorers, and upcoming fixtures')">⚽ Premier League Table & Scores</button>
-              <button class="suggestion-btn" onclick="quickAsk('Write a Python function using requests to fetch live cricket scores from a REST API')">💻 Python API Code Example</button>
-              <button class="suggestion-btn" onclick="quickAsk('ATP and WTA tennis rankings')">🎾 ATP / WTA Rankings</button>
-            </div>
-          </div>
-        `;
-        return;
-      }
-
-      session.messages.forEach(m => {
-        appendMessageElement(m.role, m.text, m.sources || [], false, m.isSports || false);
-      });
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function quickAsk(text) {
-      promptInput.value = text;
-      chatForm.dispatchEvent(new Event("submit"));
-    }
-
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    }
-
-    function renderRichMarkdown(rawText) {
-      const codeBlocks = [];
-      const withPlaceholders = String(rawText).replace(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g, (_, lang, code) => {
-        const idx = codeBlocks.length;
-        const cleanLang = (lang || "code").trim();
-        const trimmedCode = code.replace(/\n$/, "");
-        codeBlocks.push({ lang: cleanLang, code: trimmedCode });
-        return `@@CODE_BLOCK_${idx}@@`;
-      });
-
-      let html = escapeHtml(withPlaceholders)
-        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-        .replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>")
-        .replace(/`([^`]+)`/g, "<code style='background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:5px;color:#7dd3fc;'>$1</code>");
-
-      html = html.replace(/@@CODE_BLOCK_(\d+)@@/g, (_, idxStr) => {
-        const block = codeBlocks[Number(idxStr)];
-        if (!block) return "";
-        const encodedCode = encodeURIComponent(block.code);
-        return `
-          <div class="code-wrapper">
-            <div class="code-header">
-              <span>${escapeHtml(block.lang)}</span>
-              <button type="button" class="copy-code-btn" data-code="${encodedCode}" onclick="copyCodeBlock(this)">Copy Code</button>
-            </div>
-            <pre><code>${escapeHtml(block.code)}</code></pre>
-          </div>
-        `;
-      });
-
-      return html;
-    }
-
-    window.copyCodeBlock = function(btn) {
-      const raw = decodeURIComponent(btn.getAttribute("data-code") || "");
-      navigator.clipboard.writeText(raw).then(() => {
-        btn.textContent = "Copied!";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          btn.textContent = "Copy Code";
-          btn.classList.remove("copied");
-        }, 1800);
-      });
-    };
-
-    function formatLocalTime(isoStr) {
-      if (!isoStr) return "";
-      try {
-        const dt = new Date(isoStr);
-        if (isNaN(dt.getTime())) return isoStr;
-        return dt.toLocaleString(undefined, {
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true
-        });
-      } catch {
-        return isoStr;
-      }
-    }
-
-    function typeWriterEffect(element, fullText, speed = 8) {
-      return new Promise(resolve => {
-        let index = 0;
-        element.classList.add("typing-cursor");
-
-        function step() {
-          const chunk = Math.max(4, Math.ceil(fullText.length / 160));
-          index = Math.min(index + chunk, fullText.length);
-          element.innerHTML = renderRichMarkdown(fullText.slice(0, index));
-          chat.scrollTop = chat.scrollHeight;
-
-          if (index < fullText.length) {
-            setTimeout(step, speed);
-          } else {
-            element.classList.remove("typing-cursor");
-            element.innerHTML = renderRichMarkdown(fullText);
-            chat.scrollTop = chat.scrollHeight;
-            resolve();
-          }
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(keys.gemini)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tools: [{ google_search: {} }],
+            contents: [{
+              parts: [{ text: `${systemPrompt}\n\nUser Question: ${userPrompt}` }]
+            }]
+          })
         }
-        step();
-      });
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error?.message || `Gemini API Error (${response.status})`);
+      }
+
+      const candidate = data?.candidates?.[0];
+      const answerText = candidate?.content?.parts?.map(p => p.text || "").join("\n") || "No sports data returned.";
+      const groundingChunks = candidate?.groundingMetadata?.groundingChunks || [];
+      const sources = groundingChunks
+        .filter(c => c.web && c.web.uri)
+        .map(c => ({ title: c.web.title || "Live Sports Source", url: c.web.uri }))
+        .slice(0, 4);
+
+      return {
+        engine: "Gemini 2.5 Sports Grounding + Cricket API",
+        isSports: true,
+        text: answerText,
+        sources
+      };
     }
 
-    async function appendMessageElement(role, text, sources = [], animate = false, isSports = false) {
-      const welcome = document.getElementById("welcomeScreen");
-      if (welcome) welcome.remove();
+    // 3. Non-Sports Handler -> Uses LangSearch API (0 Gemini API calls used)
+    async function fetchGeneralWithLangSearch(userPrompt) {
+      const keys = getKeys();
+      const freshness = document.getElementById("timeFilter").value;
 
-      const wrapper = document.createElement("div");
-      wrapper.className = `msg ${role}`;
-
-      if (role === "ai" && sources.length > 0) {
-        const srcTitle = document.createElement("div");
-        srcTitle.className = "sources-title" + (isSports ? " sports-badge" : "");
-        srcTitle.textContent = isSports
-          ? `Live Sports & Scorecard Sources (${sources.length})`
-          : `Web Sources (${sources.length})`;
-        wrapper.appendChild(srcTitle);
-
-        const grid = document.createElement("div");
-        grid.className = "sources-grid";
-
-        sources.forEach(s => {
-          let subLabel = s.sub || "";
-          if (!subLabel) {
-            try { subLabel = new URL(s.url).hostname.replace("www.", ""); } catch { subLabel = "web"; }
-          }
-          const card = document.createElement("a");
-          card.className = "source-card";
-          card.href = s.url;
-          card.target = "_blank";
-          card.rel = "noopener noreferrer";
-          card.innerHTML = `
-            <div class="source-domain">${escapeHtml(subLabel)}</div>
-            <div class="source-name">${escapeHtml(s.name || s.url)}</div>
-          `;
-          grid.appendChild(card);
-        });
-        wrapper.appendChild(grid);
-      }
-
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      wrapper.appendChild(bubble);
-
-      if (role === "ai") {
-        const actions = document.createElement("div");
-        actions.className = "msg-actions";
-        const copyBtn = document.createElement("button");
-        copyBtn.type = "button";
-        copyBtn.className = "copy-msg-btn";
-        copyBtn.textContent = "Copy Answer";
-        copyBtn.onclick = () => {
-          navigator.clipboard.writeText(text).then(() => {
-            copyBtn.textContent = "Copied!";
-            setTimeout(() => { copyBtn.textContent = "Copy Answer"; }, 1600);
-          });
+      if (!keys.langsearch || keys.langsearch === "YOUR_LANGSEARCH_API_KEY") {
+        return {
+          engine: "LangSearch Web Search",
+          isSports: false,
+          text: "⚠️ Please click **⚙️ API Keys** in the top bar and paste your **LangSearch API Key** to enable general web search (your Gemini key is reserved strictly for sports queries).",
+          sources: []
         };
-        actions.appendChild(copyBtn);
-        wrapper.appendChild(actions);
       }
 
-      chat.appendChild(wrapper);
+      const res = await fetch("https://api.langsearch.com/v1/web-search", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${keys.langsearch}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: userPrompt,
+          freshness: freshness,
+          summary: true,
+          count: 5
+        })
+      });
 
-      if (animate && role === "ai") {
-        await typeWriterEffect(bubble, text);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || data?.error || `LangSearch Error (${res.status})`);
+      }
+
+      const webPages = data?.data?.webPages?.value || data?.webPages?.value || [];
+      const sources = webPages.slice(0, 4).map(p => ({
+        title: p.name || p.title || "Web Result",
+        url: p.url
+      }));
+
+      let formatted = "";
+      if (webPages.length === 0) {
+        formatted = "No web results found for your query.";
       } else {
-        bubble.innerHTML = renderRichMarkdown(text);
-      }
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function createStatus(text) {
-      const welcome = document.getElementById("welcomeScreen");
-      if (welcome) welcome.remove();
-      const el = document.createElement("div");
-      el.className = "status";
-      el.innerHTML = `<div class="spinner"></div><span>${escapeHtml(text)}</span>`;
-      chat.appendChild(el);
-      chat.scrollTop = chat.scrollHeight;
-      return el;
-    }
-
-    // Detect coding/programming queries so they NEVER misroute into Flashscore sports API
-    function isCodingQuery(query) {
-      return /\b(python|javascript|js|typescript|ts|html|css|java|c\+\+|c#|php|ruby|golang|rust|sql|bash|script|function|code|coding|program|algorithm|regex|json|fetch|axios|requests|curl|api endpoint|convert that|rewrite|debug|syntax|loop|array|object|class|component|react|node|flask)\b/i.test(query);
-    }
-
-    function detectSportsQuery(query) {
-      if (isCodingQuery(query) && !sportsMode) return false;
-      if (sportsMode || sportSelect.value !== "auto") return true;
-      return /\b(cricket|football|soccer|ipl|t20|odi|test|score|scores|scorecard|match|matches|fixture|fixtures|standings|points table|table|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|world cup|bbl|psl|bpl|cricbuzz|flashscore|espncricinfo|tennis|atp|wta|rankings|basketball|nba|hockey|nhl|f1|formula 1|kabaddi|pkl|badminton|bwf|golf|ufc|boxing|vs|versus|batting|bowling|wickets|wicket|overs|over|runs|needed|target|trail|lead|innings|goals|halftime|fulltime|lineup|lineups|stats|statistics|squad|transfer|transfers|injury|injuries|odds|h2h|head to head|commentary|top scorers|ind|nz|aus|eng|pak|sa|sl|ban|wi|afg|virat|rohit|bumrah|messi|ronaldo|mbappe|haaland|real madrid|barcelona|arsenal|liverpool|chelsea|manchester|bayern|psg|sheffield shield|western australia|tasmania|south australia|victoria)\b/i.test(query);
-    }
-
-    function detectSportType(query) {
-      if (sportSelect.value !== "auto") return sportSelect.value;
-      const q = query.toLowerCase();
-      if (/\b(cricket|ipl|t20|odi|test|sheffield shield|batting|bowling|wickets|wicket|overs|runs|needed|target|innings|cricbuzz|espncricinfo|virat|rohit|bumrah|western australia|tasmania|south australia|victoria)\b/.test(q)) {
-        return "cricket";
-      }
-      if (/\b(football|soccer|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|goals|halftime|arsenal|liverpool|chelsea|manchester|real madrid|barcelona|bayern|psg|juventus|inter|milan|messi|ronaldo|mbappe|haaland|xg)\b/.test(q)) {
-        return "football";
-      }
-      if (/\b(tennis|atp|wta|grand slam|wimbledon|us open|french open|australian open|djokovic|alcaraz|sinner|swiatek)\b/.test(q)) {
-        return "tennis";
-      }
-      if (/\b(basketball|nba|euroleague|lakers|warriors|celtics|lebron|curry)\b/.test(q)) {
-        return "basketball";
-      }
-      if (/\b(hockey|nhl)\b/.test(q)) {
-        return "hockey";
-      }
-      if (/\b(badminton|bwf)\b/.test(q)) {
-        return "badminton";
-      }
-      return "cricket";
-    }
-
-    async function fsGet(path, headers) {
-      try {
-        const res = await fetch(`${FLASHSCORE_BASE_URL}${path}`, { headers });
-        if (!res.ok) return null;
-        return await res.json();
-      } catch {
-        return null;
-      }
-    }
-
-    function extractEntityId(ent) {
-      if (!ent) return null;
-      const directId = ent.id || ent.team_id || ent.player_id || ent.tournament_id || ent.match_id;
-      if (directId && String(directId).length >= 6) return String(directId);
-
-      if (ent.link) {
-        const parts = String(ent.link).split("/").filter(Boolean);
-        for (let i = parts.length - 1; i >= 0; i--) {
-          if (/^[A-Za-z0-9]{8}$/.test(parts[i])) {
-            return parts[i];
-          }
-        }
-      }
-      return null;
-    }
-
-    function cleanJsonToReadable(obj, maxLines = 18) {
-      if (!obj) return "";
-      const lines = [];
-
-      function walk(node, prefix = "") {
-        if (lines.length >= maxLines || node === null || node === undefined || node === "") return;
-        if (Array.isArray(node)) {
-          node.slice(0, 12).forEach((item) => {
-            if (typeof item === "object" && item !== null) {
-              const summaryParts = [];
-              for (const [k, v] of Object.entries(item)) {
-                if (v === null || v === undefined || v === "" || k.includes("link") || k.includes("image") || k.includes("logo") || k === "id") continue;
-                if (typeof v === "object") {
-                  const nestedName = v.name || v.display_name || v.score || "";
-                  if (nestedName) summaryParts.push(`${k}: ${nestedName}`);
-                } else {
-                  summaryParts.push(`${k}: ${v}`);
-                }
-              }
-              if (summaryParts.length) lines.push(`  • ${summaryParts.slice(0, 6).join(" | ")}`);
-            } else if (item !== null && item !== "") {
-              lines.push(`  • ${item}`);
-            }
-          });
-          return;
-        }
-        if (typeof node === "object") {
-          for (const [k, v] of Object.entries(node)) {
-            if (lines.length >= maxLines) break;
-            if (v === null || v === undefined || v === "" || k.includes("link") || k.includes("image") || k.includes("logo") || k === "available_tabs") continue;
-            if (typeof v === "object") {
-              walk(v, prefix ? `${prefix}.${k}` : k);
-            } else {
-              const label = k.replace(/_/g, " ");
-              lines.push(`  • ${label}: ${v}`);
-            }
-          }
-        }
-      }
-
-      walk(obj);
-      return lines.join("\n");
-    }
-
-    function getCompetitionPriority(compName, searchTerms) {
-      const lower = (compName || "").toLowerCase();
-      let score = 0;
-      if (searchTerms.some(t => lower.includes(t.toLowerCase()))) score += 100;
-
-      const majorKeywords = [
-        "premier league", "champions league", "europa league", "laliga", "la liga",
-        "serie a", "bundesliga", "ligue 1", "world cup", "icc", "ipl", "indian premier league",
-        "big bash", "sheffield shield", "ashes", "test", "odi", "t20", "nba", "atp", "wta", "grand slam"
-      ];
-      if (majorKeywords.some(m => lower.includes(m))) score += 40;
-      return score;
-    }
-
-    function extractSearchTerms(query) {
-      const aliasMap = {
-        ind: "India",
-        nz: "New Zealand",
-        aus: "Australia",
-        eng: "England",
-        pak: "Pakistan",
-        sa: "South Africa",
-        sl: "Sri Lanka",
-        ban: "Bangladesh",
-        wi: "West Indies",
-        afg: "Afghanistan",
-        wa: "Western Australia",
-        tas: "Tasmania"
-      };
-
-      const stop = new Set([
-        "give", "the", "scorecard", "score", "scores", "of", "that", "it", "is", "running", "currently",
-        "live", "match", "matches", "today", "latest", "results", "fixtures", "upcoming", "and", "or",
-        "for", "in", "on", "with", "stats", "statistics", "lineup", "lineups", "squad", "standings",
-        "table", "points", "h2h", "head", "to", "odds", "commentary", "news", "details", "summary",
-        "1st", "2nd", "3rd", "4th", "5th", "test", "odi", "t20", "series", "cricket", "football",
-        "tennis", "basketball", "please", "show", "me", "what", "are", "full", "top", "scorers",
-        "profile", "career", "headlines", "rankings", "official", "wickets", "wicket", "overs", "over",
-        "runs", "needed", "target", "batting", "bowling", "all", "other", "things"
-      ]);
-
-      const rawWords = query.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
-      const terms = [];
-
-      for (const w of rawWords) {
-        if (aliasMap[w]) {
-          terms.push(aliasMap[w]);
-        } else if (w.length > 2 && !stop.has(w)) {
-          terms.push(w);
-        }
-      }
-      return terms;
-    }
-
-    async function enrichMatchById(matchId, userQuery, headers, availableTabs = null) {
-      const q = userQuery.toLowerCase();
-      const blocks = [];
-
-      const details = await fsGet(`/matches/details?match_id=${encodeURIComponent(matchId)}`, headers);
-      const tabs = Array.isArray(details?.available_tabs)
-        ? details.available_tabs
-        : (Array.isArray(availableTabs) ? availableTabs : null);
-
-      if (details) {
-        const cleanDetails = cleanJsonToReadable(details, 10);
-        if (cleanDetails) blocks.push(`  **Match Details:**\n${cleanDetails}`);
-      }
-
-      const canCall = (tabName) => !tabs || tabs.includes(tabName);
-      const tasks = [];
-
-      if (canCall("summary")) {
-        tasks.push(fsGet(`/matches/summary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Match Summary & Events", d })));
-      }
-      if (canCall("statistics") && /\b(scorecard|stat|stats|statistics|xg|possession|shots|detail|details)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Match Statistics", d })));
-      }
-      if (canCall("player_statistics") && /\b(scorecard|player|stat|stats|statistics|batting|bowling|wickets)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/player-statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Player Scorecard Stats", d })));
-      }
-      if (canCall("lineups") && /\b(scorecard|lineup|lineups|xi|playing|squad|starting|bench)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/lineups?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Lineups & Playing XI", d })));
-      }
-      if (canCall("commentary") && /\b(commentary|ball|minute|live|scorecard)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/commentary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Live Commentary", d })));
-      }
-      if (canCall("h2h") && /\b(h2h|head to head|history)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/h2h?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Head-to-Head", d })));
-      }
-      if (canCall("standings") && /\b(standings|table|points)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/standings?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Competition Standings", d })));
-      }
-      if (canCall("odds") && /\b(odds|betting|price)\b/.test(q)) {
-        tasks.push(fsGet(`/matches/odds?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Match Odds", d })));
-      }
-
-      const settled = await Promise.all(tasks);
-      for (const item of settled) {
-        if (!item.d) continue;
-        const readable = cleanJsonToReadable(item.d, 14);
-        if (readable) {
-          blocks.push(`  **${item.key}:**\n${readable}`);
-        }
-      }
-
-      return blocks.join("\n");
-    }
-
-    async function fetchComprehensiveSportsData(userQuery, statusEl) {
-      const sport = detectSportType(userQuery);
-      const q = userQuery.toLowerCase();
-      const headers = {
-        "API-Key": FLASHSCORE_API_KEY,
-        "Accept": "application/json"
-      };
-
-      const cards = [];
-      const contextChunks = [];
-      let foundSpecificEntityMatch = false;
-
-      // A. Rankings (ATP / WTA)
-      if (/\b(rankings|ranking|atp|wta)\b/.test(q)) {
-        statusEl.querySelector("span").textContent = "Fetching official rankings from Flashscore...";
-        const rankData = await fsGet(`/rankings/data?sport=${sport}`, headers) || await fsGet(`/rankings`, headers);
-        const readableRank = cleanJsonToReadable(rankData, 20);
-        if (readableRank) {
-          contextChunks.push(`**${sport.toUpperCase()} Official Rankings:**\n${readableRank}`);
-          cards.push({
-            name: `${sport.toUpperCase()} Official Rankings`,
-            sub: "Flashscore Rankings",
-            url: "https://www.flashscore.com/tennis/rankings/",
-            text: ""
-          });
-          foundSpecificEntityMatch = true;
-        }
-      }
-
-      // B. Sports News
-      if (/\b(news|headlines|transfer|transfers|article)\b/.test(q)) {
-        statusEl.querySelector("span").textContent = `Fetching latest ${sport} news from Flashscore...`;
-        const newsData = await fsGet(`/news?sport=${sport}`, headers);
-        const items = Array.isArray(newsData) ? newsData : (newsData?.articles || newsData?.news || []);
-        if (items.length) {
-          const newsLines = items.slice(0, 6).map(n => {
-            const title = n.title || n.headline || "Headline";
-            const summary = n.summary || n.description || "";
-            cards.push({
-              name: title,
-              sub: `${sport.toUpperCase()} News`,
-              url: n.link || n.url || "https://www.flashscore.com/news/",
-              text: ""
-            });
-            return `• **${title}**${summary ? " — " + summary : ""}`;
-          }).join("\n");
-          contextChunks.push(`**Latest ${sport.toUpperCase()} News:**\n${newsLines}`);
-          foundSpecificEntityMatch = true;
-        }
-      }
-
-      // C. Search Teams, Players, or Competitions
-      const searchTerms = extractSearchTerms(userQuery);
-      let foundMatchesFromSearch = [];
-
-      if (searchTerms.length > 0) {
-        const searchPhrase = searchTerms.slice(0, 3).join(" ");
-        statusEl.querySelector("span").textContent = `Searching Flashscore (${sport}) for "${searchPhrase}"...`;
-
-        const searchRes = await fsGet(`/search?query=${encodeURIComponent(searchPhrase)}&sport=${encodeURIComponent(sport)}`, headers);
-        let rawEntities = Array.isArray(searchRes)
-          ? searchRes
-          : (searchRes?.results || searchRes?.items || searchRes?.teams || []);
-
-        const filteredEntities = rawEntities.filter(ent => {
-          const entSport = (ent.sport || ent.sport_name || "").toLowerCase();
-          if (entSport && entSport !== sport) return false;
-          return true;
-        });
-
-        for (const ent of filteredEntities.slice(0, 2)) {
-          const entId = extractEntityId(ent);
-          const entName = ent.name || ent.display_name || searchPhrase;
-          const entType = (ent.type || ent.entity_type || "").toLowerCase();
-
-          if (!entId) continue;
-
-          if (entType.includes("player")) {
-            statusEl.querySelector("span").textContent = `Fetching player profile & stats for ${entName}...`;
-            const [pDet, pCar, pInj] = await Promise.all([
-              fsGet(`/players/details?player_id=${encodeURIComponent(entId)}`, headers),
-              fsGet(`/players/career?player_id=${encodeURIComponent(entId)}`, headers),
-              fsGet(`/players/injuries?player_id=${encodeURIComponent(entId)}`, headers)
-            ]);
-            const pSections = [];
-            if (pDet) pSections.push(`**Profile:**\n${cleanJsonToReadable(pDet, 10)}`);
-            if (pCar) pSections.push(`**Career Stats:**\n${cleanJsonToReadable(pCar, 10)}`);
-            if (pInj) pSections.push(`**Injury History:**\n${cleanJsonToReadable(pInj, 6)}`);
-
-            if (pSections.length) {
-              contextChunks.push(`**Player Report — ${entName}:**\n${pSections.join("\n")}`);
-              cards.push({
-                name: entName,
-                sub: "Player Profile & Career",
-                url: ent.link || "https://www.flashscore.com/",
-                text: ""
-              });
-              foundSpecificEntityMatch = true;
-            }
-          } else if (entType.includes("tournament") || entType.includes("competition") || entType.includes("league")) {
-            statusEl.querySelector("span").textContent = `Fetching ${entName} standings, top scorers & fixtures...`;
-            const [tStand, tRes, tFix, tScorers] = await Promise.all([
-              fsGet(`/tournaments/standings?tournament_id=${encodeURIComponent(entId)}`, headers),
-              fsGet(`/tournaments/results?tournament_id=${encodeURIComponent(entId)}`, headers),
-              fsGet(`/tournaments/fixtures?tournament_id=${encodeURIComponent(entId)}`, headers),
-              fsGet(`/tournaments/top-scorers?tournament_id=${encodeURIComponent(entId)}`, headers)
-            ]);
-
-            const tSections = [];
-            if (tStand) tSections.push(`**Standings / Table:**\n${cleanJsonToReadable(tStand, 15)}`);
-            if (tScorers) tSections.push(`**Top Scorers:**\n${cleanJsonToReadable(tScorers, 10)}`);
-            if (tRes) tSections.push(`**Recent Results:**\n${cleanJsonToReadable(tRes, 8)}`);
-            if (tFix) tSections.push(`**Upcoming Fixtures:**\n${cleanJsonToReadable(tFix, 8)}`);
-
-            if (tSections.length) {
-              contextChunks.push(`**Tournament Report — ${entName}:**\n${tSections.join("\n\n")}`);
-              cards.push({
-                name: entName,
-                sub: "Table, Scorers & Fixtures",
-                url: ent.link || "https://www.flashscore.com/",
-                text: ""
-              });
-              foundSpecificEntityMatch = true;
-            }
-          } else {
-            statusEl.querySelector("span").textContent = `Fetching matches, results & squad for ${entName}...`;
-            const wantsSquad = /\b(squad|players|roster|lineup|lineups|xi)\b/.test(q);
-            const wantsTable = /\b(standings|table|points)\b/.test(q);
-
-            const [teamResults, teamFixtures, teamSquad, teamStandings] = await Promise.all([
-              fsGet(`/teams/results?team_id=${encodeURIComponent(entId)}`, headers),
-              fsGet(`/teams/fixtures?team_id=${encodeURIComponent(entId)}`, headers),
-              wantsSquad ? fsGet(`/teams/squad?team_id=${encodeURIComponent(entId)}`, headers) : Promise.resolve(null),
-              wantsTable ? fsGet(`/teams/standings?team_id=${encodeURIComponent(entId)}`, headers) : Promise.resolve(null)
-            ]);
-
-            const resList = Array.isArray(teamResults) ? teamResults : (teamResults?.matches || teamResults?.results || []);
-            const fixList = Array.isArray(teamFixtures) ? teamFixtures : (teamFixtures?.matches || teamFixtures?.fixtures || []);
-
-            for (const m of [...resList.slice(0, 4), ...fixList.slice(0, 4)]) {
-              const home = m.home?.name || m.home_name || "Home";
-              const away = m.away?.name || m.away_name || "Away";
-              const hScore = m.home_score ?? "-";
-              const aScore = m.away_score ?? "-";
-              const stage = m.stage || m.status || "";
-              const comp = m.competition?.name || entName;
-              const localTime = formatLocalTime(m.start_time);
-
-              const matchObj = {
-                id: extractEntityId(m) || m.id,
-                availableTabs: m.available_tabs || null,
-                name: `${home} ${hScore} - ${aScore} ${away}`,
-                sub: `${comp} • ${stage}${localTime ? " • " + localTime : ""}`,
-                url: m.link || ent.link || "https://www.flashscore.com/",
-                text: `• **${home} (${hScore}) vs ${away} (${aScore})** — *${comp}* | Status: **${stage}**${localTime ? " | Start: " + localTime : ""}`
-              };
-              foundMatchesFromSearch.push(matchObj);
-              cards.push(matchObj);
-              foundSpecificEntityMatch = true;
-            }
-
-            if (teamSquad) {
-              const cleanSquad = cleanJsonToReadable(teamSquad, 18);
-              if (cleanSquad) {
-                contextChunks.push(`**${entName} Squad:**\n${cleanSquad}`);
-                foundSpecificEntityMatch = true;
-              }
-            }
-            if (teamStandings) {
-              const cleanTable = cleanJsonToReadable(teamStandings, 12);
-              if (cleanTable) {
-                contextChunks.push(`**${entName} Standings:**\n${cleanTable}`);
-                foundSpecificEntityMatch = true;
-              }
-            }
-          }
-        }
-      }
-
-      // D. Live Matches & Today's Matches
-      statusEl.querySelector("span").textContent = `Checking live ${sport} scoreboard on Flashscore...`;
-      let dayData = await fsGet(`/matches/live?sport=${sport}`, headers);
-      let isLiveOnly = true;
-      if (!dayData || !dayData.match_count) {
-        dayData = await fsGet(`/matches?sport=${sport}&day=0`, headers);
-        isLiveOnly = false;
-      }
-
-      const competitions = dayData?.competitions || [];
-      const dayMatches = [];
-
-      for (const compBlock of competitions) {
-        const compName = compBlock.competition?.display_name || compBlock.competition?.name || sport.toUpperCase();
-        const compLink = compBlock.competition?.link || "https://www.flashscore.com/";
-        const compScore = getCompetitionPriority(compName, searchTerms);
-
-        for (const m of (compBlock.matches || [])) {
-          const home = m.home?.name || "Home";
-          const away = m.away?.name || "Away";
-          const hScore = m.home_score ?? "-";
-          const aScore = m.away_score ?? "-";
-          const stage = m.stage || m.status || "Scheduled";
-          const localTime = formatLocalTime(m.start_time);
-
-          let periodDetails = "";
-          if (m.home_period_scores && m.away_period_scores) {
-            const hP = Array.isArray(m.home_period_scores) ? m.home_period_scores.join(", ") : JSON.stringify(m.home_period_scores);
-            const aP = Array.isArray(m.away_period_scores) ? m.away_period_scores.join(", ") : JSON.stringify(m.away_period_scores);
-            periodDetails = `\n  Innings/Periods: ${home} [${hP}] vs ${away} [${aP}]`;
-          }
-
-          const searchBlob = `${compName} ${home} ${away}`.toLowerCase();
-          const teamMatchBoost = searchTerms.some(k => searchBlob.includes(k.toLowerCase())) ? 150 : 0;
-          if (teamMatchBoost > 0) foundSpecificEntityMatch = true;
-
-          dayMatches.push({
-            id: extractEntityId(m) || m.id,
-            availableTabs: m.available_tabs || null,
-            priority: compScore + teamMatchBoost + (isLiveOnly ? 50 : 0),
-            name: `${home} ${hScore} - ${aScore} ${away}`,
-            sub: `${compName} • ${stage}${localTime ? " • " + localTime : ""}`,
-            url: m.link || compLink,
-            text: `• **${home} (${hScore}) vs ${away} (${aScore})** — *${compName}*\n  Status: **${stage}**${localTime ? " | Start: " + localTime : ""}${periodDetails}`
-          });
-        }
-      }
-
-      dayMatches.sort((a, b) => b.priority - a.priority);
-
-      const combinedMatches = [...foundMatchesFromSearch];
-      const seenIds = new Set(combinedMatches.map(m => m.id).filter(Boolean));
-      for (const dm of dayMatches) {
-        if (!dm.id || !seenIds.has(dm.id)) {
-          combinedMatches.push(dm);
-          if (dm.id) seenIds.add(dm.id);
-        }
-      }
-
-      // E. Enrich top relevant match using available_tabs
-      const topMatches = combinedMatches.slice(0, 10);
-      const wantsDeepScorecard = /\b(scorecard|detail|details|stat|stats|statistics|summary|lineup|lineups|commentary|h2h|odds|wickets|wicket|overs|over|runs|needed|target|batting|bowling)\b/.test(q);
-
-      if (topMatches.length > 0 && topMatches[0].id && (foundSpecificEntityMatch || wantsDeepScorecard)) {
-        statusEl.querySelector("span").textContent = `Loading Flashscore match summary for ${topMatches[0].name}...`;
-        const deepInfo = await enrichMatchById(topMatches[0].id, userQuery, headers, topMatches[0].availableTabs);
-        if (deepInfo) {
-          topMatches[0].text += `\n${deepInfo}`;
-        }
-      }
-
-      const finalCards = cards.length ? cards.slice(0, 10) : topMatches.slice(0, 10);
-      if (topMatches.length) {
-        contextChunks.unshift(
-          `**${isLiveOnly ? "Live" : "Today's"} ${sport.toUpperCase()} Scoreboard (Flashscore):**\n\n` +
-          topMatches.map(m => m.text).join("\n\n")
-        );
-      }
-
-      // F. ALWAYS fetch Cricbuzz & ESPNcricinfo full scorecard details when user asks for
-      // wickets, overs, runs needed, batting/bowling, or full scorecard (or when Flashscore missed a series)
-      const shouldFetchCricketScorecardWeb =
-        (sport === "cricket" && wantsDeepScorecard) ||
-        (searchTerms.length > 0 && !foundSpecificEntityMatch);
-
-      if (shouldFetchCricketScorecardWeb) {
-        statusEl.querySelector("span").textContent = `Fetching full wickets, overs, batting & bowling scorecard from Cricbuzz & ESPNcricinfo...`;
-        try {
-          const targetedQuery = topMatches.length && foundSpecificEntityMatch
-            ? `${topMatches[0].name} full scorecard wickets overs runs needed batting bowling`
-            : `${userQuery} full scorecard wickets overs runs needed batting bowling`;
-
-          const scorecardDomains = sport === "cricket"
-            ? ["cricbuzz.com", "espncricinfo.com", "cricket.com.au", "cricketworld.com", "abc.net.au"]
-            : null;
-
-          const webSports = await searchLangSearch(targetedQuery, "oneWeek", scorecardDomains);
-          if (webSports.length) {
-            const webSnippetBlock = webSports.slice(0, 4).map((r) => {
-              const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 1400);
-              finalCards.unshift({
-                name: r.name,
-                sub: "Live Full Scorecard",
-                url: r.url
-              });
-              return `• **${r.name}**\n  ${body}`;
-            }).join("\n\n");
-            contextChunks.unshift(`**Full Scorecard, Wickets, Overs, Runs Needed & Batting/Bowling Details:**\n\n${webSnippetBlock}`);
-          }
-        } catch (_) {}
+        formatted = webPages.slice(0, 4).map((item, idx) => {
+          const snippet = item.summary || item.snippet || "";
+          return `**${idx + 1}. ${item.name || "Result"}**\n${snippet}`;
+        }).join("\n\n");
       }
 
       return {
-        sport,
-        cards: finalCards.slice(0, 10),
-        contextText: contextChunks.join("\n\n---\n\n")
+        engine: "LangSearch Web Intelligence (Gemini Saved)",
+        isSports: false,
+        text: formatted,
+        sources
       };
     }
 
-    async function searchLangSearch(query, overrideFreshness = null, includeDomains = null) {
-      const payload = {
-        query,
-        count: 6,
-        contents: {
-          text: { max_characters: 3000 }
-        }
-      };
+    // Markdown-lite formatter
+    function formatMarkdown(text) {
+      let html = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 
-      const fresh = overrideFreshness !== null ? overrideFreshness : freshnessSelect.value;
-      if (fresh) payload.freshness = fresh;
-      if (includeDomains && includeDomains.length) payload.includeDomains = includeDomains;
-
-      const res = await fetch(LANGSEARCH_URL, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${LANGSEARCH_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(`LangSearch API error (${res.status}): ${errText}`);
-      }
-
-      const data = await res.json();
-      return data?.data?.webPages?.value || [];
+      html = html.replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
+      html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+      html = html.replace(/\n/g, "<br>");
+      return html;
     }
 
-    // Multi-model LLM call so coding, follow-ups, and scorecards synthesize reliably without raw snippet dumps
-    async function callFreeLLM(messages, maxChars = 6500) {
-      const models = ["openai", "mistral", "searchgpt"];
-
-      for (const modelName of models) {
-        try {
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 14000);
-          const res = await fetch("https://text.pollinations.ai/openai", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            signal: controller.signal,
-            body: JSON.stringify({
-              model: modelName,
-              messages
-            })
-          });
-          clearTimeout(timer);
-
-          if (res.ok) {
-            const json = await res.json();
-            const reply = json?.choices?.[0]?.message?.content?.trim();
-            if (reply && !reply.startsWith("<!DOCTYPE")) return reply;
-          }
-        } catch (_) {}
-      }
-
-      // Final GET fallback
-      try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 13000);
-        const combinedPrompt = messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n").slice(0, 2400);
-        const getRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}`, {
-          signal: controller.signal
-        });
-        clearTimeout(timer);
-        if (getRes.ok) {
-          const text = (await getRes.text()).trim();
-          if (text && !text.startsWith("<!DOCTYPE") && !text.startsWith("{")) return text;
-        }
-      } catch (_) {}
-
-      return null;
-    }
-
-    async function generateGroundedAnswer(userQuery, payloadData, isSports, recentHistory = []) {
-      const coding = isCodingQuery(userQuery);
-      let context = "";
-
-      if (isSports) {
-        context = payloadData.contextText;
-        if (!context) {
-          return `No matching **${payloadData.sport}** fixtures, results, or stats were returned right now. Try specifying a team, tournament, or sport name.`;
-        }
-      } else if (!coding && Array.isArray(payloadData) && payloadData.length) {
-        context = payloadData.map((r, i) => {
-          const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 950);
-          return `[${i + 1}] ${r.name}: ${body}`;
-        }).join("\n");
-      }
-
-      const systemPrompt = isSports
-        ? "You are Nexus AI, an expert live sports & cricket scorecard analyst. Using ONLY the provided Flashscore & Cricbuzz/ESPNcricinfo data, present a complete, crystal-clear scorecard breakdown including:\n" +
-          "1. **Match Summary & Status** (exact runs, wickets fallen, overs bowled, lead/trail, target & runs needed to win, current day/session).\n" +
-          "2. **Batting & Bowling Highlights** (top batters with runs/balls, top bowlers with wickets/overs, and fall of wickets if present in the data).\n" +
-          "3. **Other Active Matches / Standings / Stats** if provided.\n" +
-          "Use clean bullet points and **bold** headings. Never cut off mid-sentence."
-        : coding
-        ? "You are Nexus AI, an expert software engineer. Write clean, complete, ready-to-run code answering the user's request (and use prior conversation context if converting or updating previous code). Always wrap code in triple backticks with the language name (e.g. ```python or ```javascript) so the UI renders a Copy button."
-        : "You are Nexus AI, a live web search & conversational assistant. Answer clearly and completely using the provided live search results (when applicable) and conversation history. Wrap any code snippets in triple backticks ```language. Use clean bullet points and **bold** highlights.";
-
-      const historyMessages = recentHistory.slice(-6).map(m => ({
-        role: m.role === "ai" ? "assistant" : "user",
-        content: m.text.slice(0, 1400)
-      }));
-
-      const userContent = context
-        ? `Question: ${userQuery}\n\nLive Data:\n${context.slice(0, 6500)}`
-        : userQuery;
-
-      const llmReply = await callFreeLLM([
-        { role: "system", content: systemPrompt },
-        ...historyMessages,
-        { role: "user", content: userContent }
-      ]);
-
-      if (llmReply) return llmReply;
-
-      if (isSports) {
-        return context.slice(0, 4500);
-      }
-
-      if (Array.isArray(payloadData) && payloadData.length) {
-        return `**Live Web Results for "${userQuery}":**\n\n` +
-          payloadData.slice(0, 5).map(r => {
-            const clean = (r.snippet || r.text || "").replace(/\s+/g, " ").trim();
-            return `• **${r.name}**\n  ${clean}`;
-          }).join("\n\n");
-      }
-
-      return "⚠️ The AI synthesis service is temporarily busy. Please try sending your prompt again in a few seconds.";
-    }
-
-    chatForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const query = promptInput.value.trim();
-      if (!query) return;
-
-      let session = getCurrentSession();
-      if (!session) {
-        session = createNewSession(query);
-      } else if (session.messages.length === 0) {
-        session.title = query.slice(0, 42);
-      }
-
-      const priorHistory = [...session.messages];
-
-      promptInput.value = "";
-      sendBtn.disabled = true;
-
-      session.messages.push({ role: "user", text: query });
-      session.updatedAt = Date.now();
-      saveSessions();
+    // Chat State Management
+    function saveChats() {
+      localStorage.setItem("nexus_chats_v2", JSON.stringify(chats));
       renderSidebar();
-      await appendMessageElement("user", query, [], false);
+    }
 
-      const coding = isCodingQuery(query);
-      const isSports = detectSportsQuery(query);
-      const isConversationalOnly = /^(hi|hello|hey|namaste|good morning|good evening|thanks|thank you|ok|okay|who are you|what is your name)[!?. ]*$/i.test(query);
+    function createNewChat() {
+      const id = Date.now().toString();
+      chats.unshift({ id, title: "New Conversation", messages: [] });
+      currentChatId = id;
+      saveChats();
+      renderMessages();
+    }
 
-      const statusEl = createStatus(
-        isSports
-          ? "Fetching live scores, wickets, overs & full scorecard data..."
-          : coding
-          ? "Generating code solution..."
-          : isConversationalOnly
-          ? "Thinking..."
-          : "Searching live web via LangSearch..."
-      );
+    function deleteChat(id, e) {
+      e.stopPropagation();
+      chats = chats.filter(c => c.id !== id);
+      if (currentChatId === id) {
+        currentChatId = chats[0]?.id || null;
+      }
+      saveChats();
+      renderMessages();
+    }
+
+    function clearAllHistory() {
+      chats = [];
+      currentChatId = null;
+      saveChats();
+      renderMessages();
+    }
+
+    function renderSidebar() {
+      const list = document.getElementById("chatList");
+      document.getElementById("chatCount").textContent = chats.length;
+      list.innerHTML = "";
+      chats.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "chat-item" + (c.id === currentChatId ? " active" : "");
+        div.onclick = () => { currentChatId = c.id; renderSidebar(); renderMessages(); };
+        div.innerHTML = `<span class="chat-title">${c.title}</span><button class="del-btn" onclick="deleteChat('${c.id}', event)">🗑</button>`;
+        list.appendChild(div);
+      });
+    }
+
+    function renderMessages() {
+      const box = document.getElementById("messages");
+      box.innerHTML = "";
+      const active = chats.find(c => c.id === currentChatId);
+      if (!active || active.messages.length === 0) {
+        box.innerHTML = `
+          <div class="msg ai">
+            <strong>Welcome to Nexus AI</strong><br>
+            • <strong>Sports Queries</strong> (Cricket, Football, Live Scores, Scorecards) automatically use your <strong>Gemini API Key + Render Cricket API</strong>.<br>
+            • <strong>General Web & Code Queries</strong> use <strong>LangSearch</strong> so your Gemini free tier is preserved strictly for sports.
+          </div>`;
+        return;
+      }
+
+      active.messages.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "msg " + m.role;
+        if (m.role === "user") {
+          div.textContent = m.text;
+        } else {
+          const badgeClass = m.isSports ? "engine-sports" : "engine-web";
+          const sourcesHtml = (m.sources && m.sources.length)
+            ? `<div class="sources-box">${m.sources.map(s => `<a class="source-chip" href="${s.url}" target="_blank" rel="noopener">${s.title}</a>`).join("")}</div>`
+            : "";
+          div.innerHTML = `
+            <span class="engine-tag ${badgeClass}">${m.engine || "Nexus AI"}</span>
+            ${sourcesHtml}
+            <div>${formatMarkdown(m.text)}</div>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.innerText)">Copy Answer</button>
+          `;
+        }
+        box.appendChild(div);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("promptInput");
+      const btn = document.getElementById("askBtn");
+      const promptText = input.value.trim();
+      if (!promptText) return;
+
+      if (!currentChatId) createNewChat();
+      const active = chats.find(c => c.id === currentChatId);
+      if (active.messages.length === 0) {
+        active.title = promptText.slice(0, 42);
+      }
+
+      active.messages.push({ role: "user", text: promptText });
+      input.value = "";
+      btn.disabled = true;
+      saveChats();
+      renderMessages();
+
+      const sportsMode = isSportsQuery(promptText);
+      active.messages.push({
+        role: "ai",
+        isSports: sportsMode,
+        engine: sportsMode ? "Fetching Live Sports via Gemini..." : "Searching Web via LangSearch...",
+        text: "⏳ Loading real-time results...",
+        sources: []
+      });
+      renderMessages();
 
       try {
-        let slimSources = [];
-        let answer = "";
+        const result = sportsMode
+          ? await fetchSportsWithGemini(promptText)
+          : await fetchGeneralWithLangSearch(promptText);
 
-        if (isSports) {
-          const sportsReport = await fetchComprehensiveSportsData(query, statusEl);
-          statusEl.querySelector("span").textContent = "Formatting complete scorecard & match report...";
-          answer = await generateGroundedAnswer(query, sportsReport, true, priorHistory);
-          slimSources = sportsReport.cards.map(c => ({
-            name: c.name,
-            url: c.url,
-            sub: c.sub || ""
-          }));
-        } else if (coding || isConversationalOnly) {
-          answer = await generateGroundedAnswer(query, [], false, priorHistory);
-        } else {
-          const webResults = await searchLangSearch(query);
-          statusEl.querySelector("span").textContent = `Synthesizing ${webResults.length} web sources...`;
-          answer = await generateGroundedAnswer(query, webResults, false, priorHistory);
-          slimSources = webResults.map(r => ({
-            name: r.name,
-            url: r.url,
-            sub: ""
-          }));
-        }
-
-        statusEl.remove();
-
-        session.messages.push({ role: "ai", text: answer, sources: slimSources, isSports });
-        session.updatedAt = Date.now();
-        saveSessions();
-        renderSidebar();
-
-        await appendMessageElement("ai", answer, slimSources, true, isSports);
+        active.messages[active.messages.length - 1] = {
+          role: "ai",
+          isSports: result.isSports,
+          engine: result.engine,
+          text: result.text,
+          sources: result.sources
+        };
       } catch (err) {
-        statusEl.remove();
-        const errorMsg = `⚠️ **Request Failed:** ${err.message}`;
-        session.messages.push({ role: "ai", text: errorMsg, sources: [] });
-        saveSessions();
-        await appendMessageElement("ai", errorMsg, [], true);
-      } finally {
-        sendBtn.disabled = false;
-        promptInput.focus();
+        active.messages[active.messages.length - 1] = {
+          role: "ai",
+          isSports: sportsMode,
+          engine: "API Notice",
+          text: `❌ ${err.message}`,
+          sources: []
+        };
       }
-    });
 
+      btn.disabled = false;
+      saveChats();
+      renderMessages();
+    }
+
+    if (chats.length > 0) currentChatId = chats[0].id;
     renderSidebar();
-    renderActiveChat();
+    renderMessages();
   </script>
 </body>
 </html>
