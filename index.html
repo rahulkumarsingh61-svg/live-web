@@ -398,8 +398,8 @@
     }
 
     .source-card {
-      min-width: 185px;
-      max-width: 225px;
+      min-width: 195px;
+      max-width: 235px;
       background: rgba(15, 23, 42, 0.92);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -568,7 +568,7 @@
 
     <div class="input-area">
       <form class="input-box" id="chatForm">
-        <input type="text" id="promptInput" placeholder="Ask about live cricket/football scores or anything on the web..." autocomplete="off" required />
+        <input type="text" id="promptInput" placeholder="Ask about live scores, match details, or anything on the web..." autocomplete="off" required />
         <button type="submit" id="sendBtn">Ask AI</button>
       </form>
     </div>
@@ -583,7 +583,7 @@
     const FLASHSCORE_API_KEY = "ok_92db7785358099d92f49007ceb9d2de6";
     const FLASHSCORE_BASE_URL = "https://flashscore-scraper.omkar.cloud";
 
-    const STORAGE_KEY = "nexus_ai_sessions_v3";
+    const STORAGE_KEY = "nexus_ai_sessions_v4";
 
     const sidebar = document.getElementById("sidebar");
     const sidebarOverlay = document.getElementById("sidebarOverlay");
@@ -728,10 +728,10 @@
         chat.innerHTML = `
           <div class="welcome" id="welcomeScreen">
             <h1>Ask Anything, Grounded Live</h1>
-            <p>Automatically uses <strong>Flashscore Live Sports API</strong> for any cricket, football, or sports question, and <strong>LangSearch Web API</strong> for everything else.</p>
+            <p>Automatically uses <strong>Flashscore Live Sports API</strong> for live scores, match stats, and scorecards across 37 sports, and <strong>LangSearch Web API</strong> for everything else.</p>
             <div class="suggestions">
               <button class="suggestion-btn" onclick="quickAsk('Live cricket match scores today')">🏏 Live cricket scores</button>
-              <button class="suggestion-btn" onclick="quickAsk('Live football match scores today')">⚽ Live football scores</button>
+              <button class="suggestion-btn" onclick="quickAsk('Live football match scores and stats today')">⚽ Live football scores</button>
               <button class="suggestion-btn" onclick="quickAsk('Top AI breakthroughs this week')">🤖 Top AI breakthroughs</button>
             </div>
           </div>
@@ -762,6 +762,24 @@
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
         .replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>")
         .replace(/`([^`]+)`/g, "<code style='background:rgba(0,0,0,0.35);padding:2px 6px;border-radius:5px;'>$1</code>");
+    }
+
+    // Format ISO UTC timestamp into clean local time (e.g., "Nov 23, 8:00 AM")
+    function formatLocalTime(isoStr) {
+      if (!isoStr) return "";
+      try {
+        const dt = new Date(isoStr);
+        if (isNaN(dt.getTime())) return isoStr;
+        return dt.toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true
+        });
+      } catch {
+        return isoStr;
+      }
     }
 
     function typeWriterEffect(element, fullText, speed = 8) {
@@ -852,7 +870,7 @@
     // Detect ANY sports-related question automatically
     function detectSportsQuery(query) {
       if (sportsMode) return true;
-      return /\b(cricket|football|soccer|ipl|t20|odi|test|score|scores|scorecard|match|matches|fixture|fixtures|standings|points table|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|world cup|bbl|psl|bpl|cricbuzz|flashscore|espncricinfo|tennis|atp|wta|basketball|nba|hockey|f1|formula 1|kabaddi|pkl|badminton|golf|ufc|boxing|vs|versus|batting|bowling|wickets|innings|goals|halftime|fulltime)\b/i.test(query);
+      return /\b(cricket|football|soccer|ipl|t20|odi|test|score|scores|scorecard|match|matches|fixture|fixtures|standings|points table|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|world cup|bbl|psl|bpl|cricbuzz|flashscore|espncricinfo|tennis|atp|wta|basketball|nba|hockey|f1|formula 1|kabaddi|pkl|badminton|golf|ufc|boxing|vs|versus|batting|bowling|wickets|innings|goals|halftime|fulltime|lineup|lineups|stats|statistics)\b/i.test(query);
     }
 
     function detectSportType(query) {
@@ -872,8 +890,51 @@
       if (/\b(badminton|bwf)\b/.test(q)) {
         return "badminton";
       }
-      // Default to cricket (most common for India/IPL/T20/ODI/Test queries)
       return "cricket";
+    }
+
+    // Fetch deep match summary & stats if user explicitly asks for scorecard/details/stats
+    async function fetchDeepMatchDetails(matchId, headers) {
+      let extraLines = [];
+      try {
+        const [sumRes, statRes] = await Promise.all([
+          fetch(`${FLASHSCORE_BASE_URL}/matches/summary?match_id=${encodeURIComponent(matchId)}`, { headers }),
+          fetch(`${FLASHSCORE_BASE_URL}/matches/statistics?match_id=${encodeURIComponent(matchId)}`, { headers })
+        ]);
+
+        if (sumRes.ok) {
+          const sumData = await sumRes.json();
+          const events = Array.isArray(sumData) ? sumData : (sumData?.events || sumData?.summary || []);
+          if (Array.isArray(events) && events.length) {
+            const topEvents = events.slice(0, 8).map(ev => {
+              const time = ev.time || ev.minute || "";
+              const player = ev.player?.name || ev.player || ev.participant || "";
+              const type = ev.type || ev.event || "";
+              return `${time ? time + "' " : ""}${type} ${player}`.trim();
+            }).filter(Boolean);
+            if (topEvents.length) {
+              extraLines.push(`  • Key Events: ${topEvents.join(", ")}`);
+            }
+          }
+        }
+
+        if (statRes.ok) {
+          const statData = await statRes.json();
+          const statsList = Array.isArray(statData) ? statData : (statData?.statistics || []);
+          if (Array.isArray(statsList) && statsList.length) {
+            const topStats = statsList.slice(0, 6).map(st => {
+              const label = st.name || st.category || "";
+              const h = st.home_value ?? st.home ?? "";
+              const a = st.away_value ?? st.away ?? "";
+              return label ? `${label}: ${h} - ${a}` : "";
+            }).filter(Boolean);
+            if (topStats.length) {
+              extraLines.push(`  • Match Stats: ${topStats.join(" | ")}`);
+            }
+          }
+        }
+      } catch (_) {}
+      return extraLines.join("\n");
     }
 
     // Fetch Live Sports via Omkar Flashscore Scraper API
@@ -888,7 +949,7 @@
       let res = await fetch(`${FLASHSCORE_BASE_URL}/matches?sport=${sport}&day=0&status=live`, { headers });
       let data = res.ok ? await res.json() : null;
 
-      // 2. If no live matches at this exact moment, get all today's matches (live + finished + upcoming)
+      // 2. Fallback to all matches today if no match is live right now
       if (!data || !data.match_count || data.match_count === 0) {
         res = await fetch(`${FLASHSCORE_BASE_URL}/matches?sport=${sport}&day=0`, { headers });
         if (!res.ok) {
@@ -899,7 +960,7 @@
       }
 
       const competitions = data?.competitions || [];
-      const stopWords = new Set(["live", "score", "scores", "scorecard", "match", "matches", "today", "cricket", "football", "what", "the", "and", "for", "update", "updates", "latest"]);
+      const stopWords = new Set(["live", "score", "scores", "scorecard", "match", "matches", "today", "cricket", "football", "what", "the", "and", "for", "update", "updates", "latest", "stats", "details", "summary"]);
       const keywords = userQuery
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, "")
@@ -918,23 +979,25 @@
           const hScore = m.home_score !== null && m.home_score !== undefined ? m.home_score : "-";
           const aScore = m.away_score !== null && m.away_score !== undefined ? m.away_score : "-";
           const stage = m.stage || m.status || "Scheduled";
-          const timeInfo = m.start_time ? ` | Time: ${m.start_time}` : "";
+          const localTime = formatLocalTime(m.start_time);
+          const timeInfo = localTime ? ` | Start: ${localTime}` : "";
 
-          // Extra period/innings scores if available
           let periodDetails = "";
           if (m.home_period_scores && m.away_period_scores) {
-            periodDetails = ` | Period/Innings: Home [${JSON.stringify(m.home_period_scores)}] vs Away [${JSON.stringify(m.away_period_scores)}]`;
+            const hP = Array.isArray(m.home_period_scores) ? m.home_period_scores.join(", ") : JSON.stringify(m.home_period_scores);
+            const aP = Array.isArray(m.away_period_scores) ? m.away_period_scores.join(", ") : JSON.stringify(m.away_period_scores);
+            periodDetails = ` | Innings/Periods: ${home} [${hP}] vs ${away} [${aP}]`;
           }
 
-          const line = `• **${home} (${hScore}) vs ${away} (${aScore})** — *${compName}* | Status: **${stage}**${timeInfo}${periodDetails}`;
+          const line = `• **${home} (${hScore}) vs ${away} (${aScore})** — *${compName}*\n  Status: **${stage}**${timeInfo}${periodDetails}`;
           const searchBlob = `${compName} ${home} ${away} ${stage}`.toLowerCase();
-
           const priority = keywords.some(k => searchBlob.includes(k)) ? 1 : 0;
 
           matches.push({
+            id: m.id,
             priority,
             name: `${home} ${hScore} - ${aScore} ${away}`,
-            sub: `${compName} • ${stage}`,
+            sub: `${compName} • ${stage}${localTime ? " • " + localTime : ""}`,
             url: m.link || compLink,
             text: line
           });
@@ -942,7 +1005,22 @@
       }
 
       matches.sort((a, b) => b.priority - a.priority);
-      return { sport, matches: matches.slice(0, 15) };
+      const topMatches = matches.slice(0, 15);
+
+      // If user explicitly asked for scorecard, details, lineups, or stats, enrich top 2 matches
+      const wantsDeepDetails = /\b(scorecard|detail|details|stat|stats|statistics|summary|lineup|lineups|commentary|highlights)\b/i.test(userQuery);
+      if (wantsDeepDetails && topMatches.length > 0) {
+        for (let i = 0; i < Math.min(2, topMatches.length); i++) {
+          if (topMatches[i].id) {
+            const extra = await fetchDeepMatchDetails(topMatches[i].id, headers);
+            if (extra) {
+              topMatches[i].text += `\n${extra}`;
+            }
+          }
+        }
+      }
+
+      return { sport, matches: topMatches };
     }
 
     // Fetch General Web Results via LangSearch API
@@ -987,12 +1065,12 @@
       }
 
       const context = results.map((r, i) => {
-        const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 900);
+        const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 950);
         return `[${i + 1}] ${r.name}: ${body}`;
       }).join("\n");
 
       const systemPrompt = isSports
-        ? "You are Nexus AI, a live sports scoreboard assistant. Present the exact match scores, competition names, match status (live/finished/scheduled), and key details from the provided Flashscore data. Use clean bullet points and **bold** team names and scores. Never cut off mid-sentence."
+        ? "You are Nexus AI, a live sports scoreboard assistant. Present the exact match scores, competition names, match status (live/finished/scheduled), local start times, and any match stats/events from the provided Flashscore data. Use clean bullet points and **bold** team names and scores. Never cut off mid-sentence."
         : "You are Nexus AI, a live web search assistant. Answer the user's question clearly and completely using ONLY the provided search results. Format with clean bullet points and **bold** highlights. Never cut off mid-sentence.";
 
       // Attempt 1: Pollinations OpenAI-compatible POST endpoint
@@ -1035,7 +1113,7 @@
         }
       } catch (_) {}
 
-      // Attempt 3: Direct clean output (already formatted cleanly for Flashscore & LangSearch)
+      // Attempt 3: Clean formatted direct output
       if (isSports) {
         return `**Live & Today's ${sportName.toUpperCase()} Matches (Flashscore):**\n\n` +
           results.map(r => r.text).join("\n\n");
