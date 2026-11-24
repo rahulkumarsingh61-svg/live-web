@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Nexus AI — Live Web Search Assistant</title>
+  <title>Nexus AI — Live Web & Sports Assistant</title>
   <style>
     :root {
       --bg: #070b14;
@@ -14,6 +14,7 @@
       --muted: #9ca3af;
       --accent: #38bdf8;
       --accent-2: #818cf8;
+      --sports: #22c55e;
       --user-bubble: linear-gradient(135deg, #2563eb, #4f46e5);
       --ai-bubble: rgba(30, 41, 59, 0.86);
     }
@@ -167,7 +168,7 @@
       backdrop-filter: blur(2px);
     }
 
-    /* Main Workspace - min-width: 0 & min-height: 0 prevent flex overflow clipping */
+    /* Main Workspace */
     .main-wrapper {
       flex: 1;
       display: flex;
@@ -245,13 +246,13 @@
     select:hover, .pill-toggle:hover { border-color: var(--accent); }
 
     .pill-toggle.active {
-      background: rgba(56, 189, 248, 0.2);
-      border-color: var(--accent);
-      color: var(--accent);
+      background: rgba(34, 197, 94, 0.18);
+      border-color: var(--sports);
+      color: #4ade80;
       font-weight: 600;
     }
 
-    /* Scrollable Chat Container */
+    /* Scrollable Chat Area */
     #chat {
       flex: 1;
       min-height: 0;
@@ -313,7 +314,7 @@
       transform: translateY(-1px);
     }
 
-    /* Messages - Never clip or cut off */
+    /* Messages */
     .msg {
       display: flex;
       flex-direction: column;
@@ -329,13 +330,8 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .msg.user {
-      align-items: flex-end;
-    }
-
-    .msg.ai {
-      align-items: flex-start;
-    }
+    .msg.user { align-items: flex-end; }
+    .msg.ai { align-items: flex-start; }
 
     .bubble {
       padding: 15px 18px;
@@ -377,7 +373,7 @@
       51%, 100% { opacity: 0; }
     }
 
-    /* Sources Strip */
+    /* Sources / Match Cards Strip */
     .sources-title {
       font-size: 0.72rem;
       text-transform: uppercase;
@@ -385,6 +381,10 @@
       color: var(--accent);
       margin-bottom: 7px;
       font-weight: 600;
+    }
+
+    .sources-title.sports-badge {
+      color: #4ade80;
     }
 
     .sources-grid {
@@ -398,8 +398,8 @@
     }
 
     .source-card {
-      min-width: 175px;
-      max-width: 215px;
+      min-width: 185px;
+      max-width: 225px;
       background: rgba(15, 23, 42, 0.92);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -554,8 +554,8 @@
         </div>
       </div>
       <div class="controls">
-        <button id="sportsToggle" class="pill-toggle" title="Search live cricket & football scoreboards">🏏 Live Sports</button>
-        <select id="freshnessSelect" title="Search Recency">
+        <button id="sportsToggle" class="pill-toggle" title="Force Flashscore Live Sports API">🏏 Live Sports</button>
+        <select id="freshnessSelect" title="Web Search Recency">
           <option value="">Any Time</option>
           <option value="oneDay">Past 24 Hours</option>
           <option value="oneWeek" selected>Past Week</option>
@@ -568,16 +568,22 @@
 
     <div class="input-area">
       <form class="input-box" id="chatForm">
-        <input type="text" id="promptInput" placeholder="Ask about live matches, news, or anything..." autocomplete="off" required />
+        <input type="text" id="promptInput" placeholder="Ask about live cricket/football scores or anything on the web..." autocomplete="off" required />
         <button type="submit" id="sendBtn">Ask AI</button>
       </form>
     </div>
   </div>
 
   <script>
+    // 1. General Web Search API (LangSearch)
     const LANGSEARCH_API_KEY = "sk-8312c802939e459ba348814af35a41b3";
     const LANGSEARCH_URL = "https://api.langsearch.com/v1/web-search";
-    const STORAGE_KEY = "nexus_ai_sessions_v2";
+
+    // 2. Live Sports API (Omkar Flashscore Scraper)
+    const FLASHSCORE_API_KEY = "ok_92db7785358099d92f49007ceb9d2de6";
+    const FLASHSCORE_BASE_URL = "https://flashscore-scraper.omkar.cloud";
+
+    const STORAGE_KEY = "nexus_ai_sessions_v3";
 
     const sidebar = document.getElementById("sidebar");
     const sidebarOverlay = document.getElementById("sidebarOverlay");
@@ -612,7 +618,6 @@
     sportsToggle.addEventListener("click", () => {
       sportsMode = !sportsMode;
       sportsToggle.classList.toggle("active", sportsMode);
-      freshnessSelect.value = sportsMode ? "oneDay" : "oneWeek";
     });
 
     function loadSessions() {
@@ -723,11 +728,11 @@
         chat.innerHTML = `
           <div class="welcome" id="welcomeScreen">
             <h1>Ask Anything, Grounded Live</h1>
-            <p>Powered by LangSearch Web Search API with permanent chat memory. Toggle <strong>Live Sports</strong> for live match scores or ask any question.</p>
+            <p>Automatically uses <strong>Flashscore Live Sports API</strong> for any cricket, football, or sports question, and <strong>LangSearch Web API</strong> for everything else.</p>
             <div class="suggestions">
-              <button class="suggestion-btn" onclick="quickSportsAsk('India live cricket match score today')">🏏 India live cricket score</button>
-              <button class="suggestion-btn" onclick="quickAsk('Latest AI model releases and breakthroughs')">🤖 Latest AI breakthroughs</button>
-              <button class="suggestion-btn" onclick="quickSportsAsk('Live football match scores today Premier League Champions League')">⚽ Live football scores</button>
+              <button class="suggestion-btn" onclick="quickAsk('Live cricket match scores today')">🏏 Live cricket scores</button>
+              <button class="suggestion-btn" onclick="quickAsk('Live football match scores today')">⚽ Live football scores</button>
+              <button class="suggestion-btn" onclick="quickAsk('Top AI breakthroughs this week')">🤖 Top AI breakthroughs</button>
             </div>
           </div>
         `;
@@ -735,7 +740,7 @@
       }
 
       session.messages.forEach(m => {
-        appendMessageElement(m.role, m.text, m.sources || [], false);
+        appendMessageElement(m.role, m.text, m.sources || [], false, m.isSports || false);
       });
       chat.scrollTop = chat.scrollHeight;
     }
@@ -743,15 +748,6 @@
     function quickAsk(text) {
       promptInput.value = text;
       chatForm.dispatchEvent(new Event("submit"));
-    }
-
-    function quickSportsAsk(text) {
-      if (!sportsMode) {
-        sportsMode = true;
-        sportsToggle.classList.add("active");
-        freshnessSelect.value = "oneDay";
-      }
-      quickAsk(text);
     }
 
     function escapeHtml(str) {
@@ -792,7 +788,7 @@
       });
     }
 
-    async function appendMessageElement(role, text, sources = [], animate = false) {
+    async function appendMessageElement(role, text, sources = [], animate = false, isSports = false) {
       const welcome = document.getElementById("welcomeScreen");
       if (welcome) welcome.remove();
 
@@ -801,23 +797,27 @@
 
       if (role === "ai" && sources.length > 0) {
         const srcTitle = document.createElement("div");
-        srcTitle.className = "sources-title";
-        srcTitle.textContent = `Sources (${sources.length})`;
+        srcTitle.className = "sources-title" + (isSports ? " sports-badge" : "");
+        srcTitle.textContent = isSports
+          ? `Live Flashscore Matches (${sources.length})`
+          : `Web Sources (${sources.length})`;
         wrapper.appendChild(srcTitle);
 
         const grid = document.createElement("div");
         grid.className = "sources-grid";
 
         sources.forEach(s => {
-          let domain = "";
-          try { domain = new URL(s.url).hostname.replace("www.", ""); } catch { domain = "web"; }
+          let subLabel = s.sub || "";
+          if (!subLabel) {
+            try { subLabel = new URL(s.url).hostname.replace("www.", ""); } catch { subLabel = "web"; }
+          }
           const card = document.createElement("a");
           card.className = "source-card";
           card.href = s.url;
           card.target = "_blank";
           card.rel = "noopener noreferrer";
           card.innerHTML = `
-            <div class="source-domain">${escapeHtml(domain)}</div>
+            <div class="source-domain">${escapeHtml(subLabel)}</div>
             <div class="source-name">${escapeHtml(s.name || s.url)}</div>
           `;
           grid.appendChild(card);
@@ -849,37 +849,114 @@
       return el;
     }
 
-    async function searchLangSearch(rawQuery) {
-      // Auto-detect sports intent even if toggle wasn't clicked
-      const isSportsQuery = sportsMode || /\b(cricket|football|ipl|t20|odi|test match|score|scorecard|premier league|champions league|fifa|nba|f1|match)\b/i.test(rawQuery);
-      const effectiveQuery = isSportsQuery
-        ? `${rawQuery} live score scorecard updates`
-        : rawQuery;
+    // Detect ANY sports-related question automatically
+    function detectSportsQuery(query) {
+      if (sportsMode) return true;
+      return /\b(cricket|football|soccer|ipl|t20|odi|test|score|scores|scorecard|match|matches|fixture|fixtures|standings|points table|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|world cup|bbl|psl|bpl|cricbuzz|flashscore|espncricinfo|tennis|atp|wta|basketball|nba|hockey|f1|formula 1|kabaddi|pkl|badminton|golf|ufc|boxing|vs|versus|batting|bowling|wickets|innings|goals|halftime|fulltime)\b/i.test(query);
+    }
 
+    function detectSportType(query) {
+      const q = query.toLowerCase();
+      if (/\b(football|soccer|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|goals|halftime|arsenal|liverpool|chelsea|manchester|real madrid|barcelona|bayern|psg|juventus|inter|milan)\b/.test(q)) {
+        return "football";
+      }
+      if (/\b(tennis|atp|wta|grand slam|wimbledon|us open|french open|australian open)\b/.test(q)) {
+        return "tennis";
+      }
+      if (/\b(basketball|nba|euroleague|lakers|warriors|celtics)\b/.test(q)) {
+        return "basketball";
+      }
+      if (/\b(hockey|nhl)\b/.test(q)) {
+        return "hockey";
+      }
+      if (/\b(badminton|bwf)\b/.test(q)) {
+        return "badminton";
+      }
+      // Default to cricket (most common for India/IPL/T20/ODI/Test queries)
+      return "cricket";
+    }
+
+    // Fetch Live Sports via Omkar Flashscore Scraper API
+    async function fetchFlashscoreMatches(userQuery) {
+      const sport = detectSportType(userQuery);
+      const headers = {
+        "API-Key": FLASHSCORE_API_KEY,
+        "Accept": "application/json"
+      };
+
+      // 1. Try live matches first
+      let res = await fetch(`${FLASHSCORE_BASE_URL}/matches?sport=${sport}&day=0&status=live`, { headers });
+      let data = res.ok ? await res.json() : null;
+
+      // 2. If no live matches at this exact moment, get all today's matches (live + finished + upcoming)
+      if (!data || !data.match_count || data.match_count === 0) {
+        res = await fetch(`${FLASHSCORE_BASE_URL}/matches?sport=${sport}&day=0`, { headers });
+        if (!res.ok) {
+          const errTxt = await res.text();
+          throw new Error(`Flashscore API error (${res.status}): ${errTxt}`);
+        }
+        data = await res.json();
+      }
+
+      const competitions = data?.competitions || [];
+      const stopWords = new Set(["live", "score", "scores", "scorecard", "match", "matches", "today", "cricket", "football", "what", "the", "and", "for", "update", "updates", "latest"]);
+      const keywords = userQuery
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, "")
+        .split(/\s+/)
+        .filter(w => w.length > 2 && !stopWords.has(w));
+
+      const matches = [];
+
+      for (const compBlock of competitions) {
+        const compName = compBlock.competition?.display_name || compBlock.competition?.name || sport.toUpperCase();
+        const compLink = compBlock.competition?.link || "https://www.flashscore.com/";
+
+        for (const m of (compBlock.matches || [])) {
+          const home = m.home?.name || "Home";
+          const away = m.away?.name || "Away";
+          const hScore = m.home_score !== null && m.home_score !== undefined ? m.home_score : "-";
+          const aScore = m.away_score !== null && m.away_score !== undefined ? m.away_score : "-";
+          const stage = m.stage || m.status || "Scheduled";
+          const timeInfo = m.start_time ? ` | Time: ${m.start_time}` : "";
+
+          // Extra period/innings scores if available
+          let periodDetails = "";
+          if (m.home_period_scores && m.away_period_scores) {
+            periodDetails = ` | Period/Innings: Home [${JSON.stringify(m.home_period_scores)}] vs Away [${JSON.stringify(m.away_period_scores)}]`;
+          }
+
+          const line = `• **${home} (${hScore}) vs ${away} (${aScore})** — *${compName}* | Status: **${stage}**${timeInfo}${periodDetails}`;
+          const searchBlob = `${compName} ${home} ${away} ${stage}`.toLowerCase();
+
+          const priority = keywords.some(k => searchBlob.includes(k)) ? 1 : 0;
+
+          matches.push({
+            priority,
+            name: `${home} ${hScore} - ${aScore} ${away}`,
+            sub: `${compName} • ${stage}`,
+            url: m.link || compLink,
+            text: line
+          });
+        }
+      }
+
+      matches.sort((a, b) => b.priority - a.priority);
+      return { sport, matches: matches.slice(0, 15) };
+    }
+
+    // Fetch General Web Results via LangSearch API
+    async function searchLangSearch(query) {
       const payload = {
-        query: effectiveQuery,
+        query,
         count: 6,
         contents: {
-          text: { max_characters: 3000 }
+          text: { max_characters: 2800 }
         }
       };
 
       if (freshnessSelect.value) {
         payload.freshness = freshnessSelect.value;
-      } else if (isSportsQuery) {
-        payload.freshness = "oneDay";
-      }
-
-      if (sportsMode) {
-        payload.includeDomains = [
-          "espncricinfo.com",
-          "cricbuzz.com",
-          "espn.com",
-          "bbc.com",
-          "skysports.com",
-          "goal.com",
-          "sports.ndtv.com"
-        ];
       }
 
       const res = await fetch(LANGSEARCH_URL, {
@@ -900,25 +977,28 @@
       return data?.data?.webPages?.value || [];
     }
 
-    async function generateGroundedAnswer(userQuery, results) {
+    // Synthesize Final Answer
+    async function generateGroundedAnswer(userQuery, results, isSports, sportName = "") {
       if (!results.length) {
-        return "No live web results were found for that query. Try switching the time filter to **Any Time** or turning off **Live Sports**.";
+        if (isSports) {
+          return `No live or scheduled **${sportName}** matches were returned right now on Flashscore. Try asking about another sport (e.g., football, cricket, tennis) or toggle off **Live Sports** for general web news.`;
+        }
+        return "No live web results were found for that query. Try switching the time filter to **Any Time**.";
       }
 
       const context = results.map((r, i) => {
         const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 900);
-        return `[Source ${i + 1}] ${r.name} (${r.url})\n${body}`;
-      }).join("\n\n");
+        return `[${i + 1}] ${r.name}: ${body}`;
+      }).join("\n");
 
-      const systemPrompt =
-        "You are Nexus AI, a live web search assistant. Answer the user's question clearly and completely using ONLY the provided search results. " +
-        "If the user asks for live sports scores, extract exact team names, current scores, overs/time, match status, and key performers. " +
-        "Ignore unrelated navigation text or cookie notices. Format with clean bullet points and **bold** highlights. Never cut off mid-sentence.";
+      const systemPrompt = isSports
+        ? "You are Nexus AI, a live sports scoreboard assistant. Present the exact match scores, competition names, match status (live/finished/scheduled), and key details from the provided Flashscore data. Use clean bullet points and **bold** team names and scores. Never cut off mid-sentence."
+        : "You are Nexus AI, a live web search assistant. Answer the user's question clearly and completely using ONLY the provided search results. Format with clean bullet points and **bold** highlights. Never cut off mid-sentence.";
 
       // Attempt 1: Pollinations OpenAI-compatible POST endpoint
       try {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 16000);
+        const timer = setTimeout(() => controller.abort(), 15000);
         const res = await fetch("https://text.pollinations.ai/openai", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -927,7 +1007,7 @@
             model: "openai",
             messages: [
               { role: "system", content: systemPrompt },
-              { role: "user", content: `Question: ${userQuery}\n\nSearch Results:\n${context}` }
+              { role: "user", content: `Question: ${userQuery}\n\nLive Data:\n${context}` }
             ]
           })
         });
@@ -940,11 +1020,11 @@
         }
       } catch (_) {}
 
-      // Attempt 2: Pollinations simple GET endpoint
+      // Attempt 2: Pollinations GET endpoint
       try {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 14000);
-        const shortPrompt = `${systemPrompt}\n\nQuestion: ${userQuery}\n\nResults:\n${context.slice(0, 2200)}`;
+        const timer = setTimeout(() => controller.abort(), 13000);
+        const shortPrompt = `${systemPrompt}\n\nQuestion: ${userQuery}\n\nData:\n${context.slice(0, 2200)}`;
         const getRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent(shortPrompt)}`, {
           signal: controller.signal
         });
@@ -955,16 +1035,17 @@
         }
       } catch (_) {}
 
-      // Attempt 3: Full-length structured synthesis (NO 200-char cutoff)
-      const fullSummaries = results.slice(0, 5).map(r => {
-        const clean = (r.snippet || r.text || "")
-          .replace(/\s+/g, " ")
-          .replace(/✓ Link kopyalandı!|Skip to content|Top Articles/gi, "")
-          .trim();
-        return `• **${r.name}**\n  ${clean}`;
-      }).join("\n\n");
+      // Attempt 3: Direct clean output (already formatted cleanly for Flashscore & LangSearch)
+      if (isSports) {
+        return `**Live & Today's ${sportName.toUpperCase()} Matches (Flashscore):**\n\n` +
+          results.map(r => r.text).join("\n\n");
+      }
 
-      return `**Live Search Summary for "${userQuery}":**\n\n${fullSummaries}`;
+      return `**Live Web Results for "${userQuery}":**\n\n` +
+        results.slice(0, 5).map(r => {
+          const clean = (r.snippet || r.text || "").replace(/\s+/g, " ").trim();
+          return `• **${r.name}**\n  ${clean}`;
+        }).join("\n\n");
     }
 
     chatForm.addEventListener("submit", async (e) => {
@@ -988,21 +1069,41 @@
       renderSidebar();
       await appendMessageElement("user", query, [], false);
 
-      const statusEl = createStatus("Searching live web via LangSearch...");
+      const isSports = detectSportsQuery(query);
+      const statusEl = createStatus(
+        isSports
+          ? "Fetching live scores via Flashscore API..."
+          : "Searching live web via LangSearch..."
+      );
 
       try {
-        const results = await searchLangSearch(query);
-        statusEl.querySelector("span").textContent = `Reading ${results.length} live sources...`;
-        const answer = await generateGroundedAnswer(query, results);
+        let results = [];
+        let sportName = "";
+
+        if (isSports) {
+          const sportsData = await fetchFlashscoreMatches(query);
+          sportName = sportsData.sport;
+          results = sportsData.matches;
+        } else {
+          results = await searchLangSearch(query);
+        }
+
+        statusEl.querySelector("span").textContent = `Formatting ${results.length} live results...`;
+        const answer = await generateGroundedAnswer(query, results, isSports, sportName);
         statusEl.remove();
 
-        const slimSources = results.map(r => ({ name: r.name, url: r.url }));
-        session.messages.push({ role: "ai", text: answer, sources: slimSources });
+        const slimSources = results.map(r => ({
+          name: r.name,
+          url: r.url,
+          sub: r.sub || ""
+        }));
+
+        session.messages.push({ role: "ai", text: answer, sources: slimSources, isSports });
         session.updatedAt = Date.now();
         saveSessions();
         renderSidebar();
 
-        await appendMessageElement("ai", answer, slimSources, true);
+        await appendMessageElement("ai", answer, slimSources, true, isSports);
       } catch (err) {
         statusEl.remove();
         const errorMsg = `⚠️ **Request Failed:** ${err.message}`;
