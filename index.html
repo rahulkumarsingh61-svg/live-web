@@ -27,7 +27,6 @@
       height: 100vh;
       overflow: hidden;
     }
-    /* Sidebar */
     .sidebar {
       width: 270px;
       background: var(--bg-sidebar);
@@ -102,7 +101,6 @@
     }
     .clear-btn:hover { border-color: #f87171; color: #f87171; }
 
-    /* Main Panel */
     .main {
       flex: 1;
       display: flex;
@@ -141,7 +139,7 @@
       gap: 8px;
       flex-wrap: wrap;
     }
-    select, .icon-btn {
+    select {
       background: var(--bg-input);
       color: var(--text-main);
       border: 1px solid var(--border);
@@ -225,7 +223,6 @@
     }
     .copy-btn:hover { color: #fff; border-color: var(--accent); }
 
-    /* Input Bar */
     .input-area {
       padding: 14px 20px;
       border-top: 1px solid var(--border);
@@ -237,7 +234,7 @@
       display: flex;
       gap: 10px;
     }
-    input[type="text"], input[type="password"] {
+    input[type="text"] {
       flex: 1;
       background: var(--bg-input);
       border: 1px solid var(--border);
@@ -258,29 +255,6 @@
       cursor: pointer;
     }
     .ask-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* Settings Modal */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-    }
-    .modal {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 22px;
-      width: 92%;
-      max-width: 480px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .modal label { font-size: 0.82rem; color: var(--text-muted); }
     pre {
       background: #0b1120;
       padding: 12px;
@@ -327,7 +301,6 @@
           <option value="oneWeek">Past Week</option>
           <option value="oneMonth">Past Month</option>
         </select>
-        <button class="icon-btn" onclick="openSettings()">⚙️ API Keys</button>
       </div>
     </header>
 
@@ -341,70 +314,25 @@
     </footer>
   </main>
 
-  <!-- API Keys Settings Modal -->
-  <div id="settingsModal" class="modal-backdrop">
-    <div class="modal">
-      <h3 style="margin:0;color:var(--accent);">API Keys Configuration</h3>
-      <p style="margin:0;font-size:0.82rem;color:var(--text-muted);">
-        Gemini API is triggered <strong>ONLY</strong> for sports queries. All other queries use LangSearch.
-      </p>
-      <label>Gemini API Key (Sports Only)</label>
-      <input id="geminiKeyInput" type="password" placeholder="AQ.Ab8RN6... or AIzaSy..." />
-
-      <label>LangSearch API Key (General Web & Code)</label>
-      <input id="langKeyInput" type="password" placeholder="sk-..." />
-
-      <label>Custom Render Cricket-API Key</label>
-      <input id="cricketKeyInput" type="text" placeholder="ck_live_nexus_2026" />
-
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
-        <button class="clear-btn" onclick="closeSettings()">Cancel</button>
-        <button class="new-chat-btn" onclick="saveSettings()">Save Keys</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // Default Keys (Sports -> Gemini + Render Cricket API | Non-Sports -> LangSearch)
-    const DEFAULT_GEMINI_KEY = "AQ.Ab8RN6KXZgBocqKVptoWh9QKJgG0nxsZeb6vPD9Vee69q6wJPA";
-    const DEFAULT_LANGSEARCH_KEY = "YOUR_LANGSEARCH_API_KEY"; // Paste your LangSearch key here or in ⚙️ API Keys
-    const CRICKET_API_BASE = "https://cricket-api-1-hmcw.onrender.com";
-    const DEFAULT_CRICKET_KEY = "ck_live_nexus_2026";
+    // =========================================================================
+    // ALL API KEYS SAVED DIRECTLY IN CODE (NO UI MODAL)
+    // =========================================================================
+    // Paste your standard Google AI Studio key (starts with "AIzaSy...") here:
+    const GEMINI_API_KEY = "AIzaSy_PASTE_YOUR_GOOGLE_AI_STUDIO_KEY_HERE";
 
-    let chats = JSON.parse(localStorage.getItem("nexus_chats_v2") || "[]");
+    // Your LangSearch API Key (used for all general web searches & live fallback):
+    const LANGSEARCH_API_KEY = "sk-ac8f61d7eb02496d83516c49328064d1";
+
+    // Your Custom Render Cricket-API + Key:
+    const CRICKET_API_BASE = "https://cricket-api-1-hmcw.onrender.com";
+    const CRICKET_API_KEY = "ck_live_nexus_2026";
+    // =========================================================================
+
+    let chats = JSON.parse(localStorage.getItem("nexus_chats_v3") || "[]");
     let currentChatId = null;
 
-    function getKeys() {
-      return {
-        gemini: localStorage.getItem("nexus_gemini_key") || DEFAULT_GEMINI_KEY,
-        langsearch: localStorage.getItem("nexus_langsearch_key") || DEFAULT_LANGSEARCH_KEY,
-        cricket: localStorage.getItem("nexus_cricket_key") || DEFAULT_CRICKET_KEY
-      };
-    }
-
-    function openSettings() {
-      const k = getKeys();
-      document.getElementById("geminiKeyInput").value = k.gemini;
-      document.getElementById("langKeyInput").value = k.langsearch === "YOUR_LANGSEARCH_API_KEY" ? "" : k.langsearch;
-      document.getElementById("cricketKeyInput").value = k.cricket;
-      document.getElementById("settingsModal").style.display = "flex";
-    }
-
-    function closeSettings() {
-      document.getElementById("settingsModal").style.display = "none";
-    }
-
-    function saveSettings() {
-      const g = document.getElementById("geminiKeyInput").value.trim();
-      const l = document.getElementById("langKeyInput").value.trim();
-      const c = document.getElementById("cricketKeyInput").value.trim();
-      if (g) localStorage.setItem("nexus_gemini_key", g);
-      if (l) localStorage.setItem("nexus_langsearch_key", l);
-      if (c) localStorage.setItem("nexus_cricket_key", c);
-      closeSettings();
-    }
-
-    // 1. Detect if the user's prompt is a Sports Query
+    // 1. Detect if the prompt is Sports-related
     function isSportsQuery(text) {
       const selectedSport = document.getElementById("sportFilter").value;
       if (selectedSport !== "auto") return true;
@@ -413,91 +341,115 @@
       return sportsRegex.test(text);
     }
 
-    // 2. Sports Handler -> Uses Gemini API Key + Your Render Cricket API
-    async function fetchSportsWithGemini(userPrompt) {
-      const keys = getKeys();
+    // 2. Sports Handler -> Uses Render Cricket-API + Gemini (only if AIzaSy key is set) + LangSearch Live Sports
+    async function handleSportsQuery(userPrompt) {
       const sportChoice = document.getElementById("sportFilter").value;
-      let renderLiveFeed = "";
+      let renderMatches = [];
+      let webSources = [];
+      let webSnippets = "";
 
-      // Pull live scores from your Render Cricket-API in parallel
+      // Step A: Pull live matches from your Render Cricket-API
       try {
         const res = await fetch(`${CRICKET_API_BASE}/live`, {
-          headers: { "X-API-Key": keys.cricket }
+          headers: { "X-API-Key": CRICKET_API_KEY }
         });
         if (res.ok) {
-          const matches = await res.json();
-          if (Array.isArray(matches) && matches.length > 0) {
-            renderLiveFeed = "Live Cricket Feed from Render API:\n" + matches.slice(0, 12).join("\n");
-          }
+          const data = await res.json();
+          if (Array.isArray(data)) renderMatches = data.slice(0, 12);
         }
       } catch (e) {
-        console.warn("Render API sleeping or skipped:", e);
+        console.warn("Render API waking up:", e);
       }
 
-      const systemPrompt = `You are Nexus AI's Live Sports & Scorecard Analyst.
-Sport Filter: ${sportChoice === "auto" ? "Detect automatically" : sportChoice}
-Current Date: ${new Date().toDateString()}
-
-Rules:
-- Use Google Search grounding AND the live feed below to provide exact live scores, wickets, overs, batting & bowling figures, runs needed, and match status.
-- Format cleanly with bullet points and bold labels (**Match Summary & Status**, **Batting & Bowling Highlights**, **Other Active Matches / Standings**).
-- Never guess scores or stats that aren't verified.
-
-${renderLiveFeed}`;
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(keys.gemini)}`,
-        {
+      // Step B: Pull fresh live sports search context via LangSearch
+      try {
+        const lsRes = await fetch("https://api.langsearch.com/v1/web-search", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Authorization": `Bearer ${LANGSEARCH_API_KEY}`,
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify({
-            tools: [{ google_search: {} }],
-            contents: [{
-              parts: [{ text: `${systemPrompt}\n\nUser Question: ${userPrompt}` }]
-            }]
+            query: `${sportChoice !== "auto" ? sportChoice + " " : ""}${userPrompt} live score scorecard`,
+            freshness: "oneDay",
+            summary: true,
+            count: 5
           })
+        });
+        if (lsRes.ok) {
+          const lsData = await lsRes.json();
+          const pages = lsData?.data?.webPages?.value || lsData?.webPages?.value || [];
+          webSources = pages.slice(0, 4).map(p => ({ title: p.name || "Live Source", url: p.url }));
+          webSnippets = pages.slice(0, 4).map(p => `• ${p.name}: ${p.summary || p.snippet || ""}`).join("\n");
         }
-      );
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.error?.message || `Gemini API Error (${response.status})`);
+      } catch (e) {
+        console.warn("LangSearch sports lookup error:", e);
       }
 
-      const candidate = data?.candidates?.[0];
-      const answerText = candidate?.content?.parts?.map(p => p.text || "").join("\n") || "No sports data returned.";
-      const groundingChunks = candidate?.groundingMetadata?.groundingChunks || [];
-      const sources = groundingChunks
-        .filter(c => c.web && c.web.uri)
-        .map(c => ({ title: c.web.title || "Live Sports Source", url: c.web.uri }))
-        .slice(0, 4);
+      // Step C: If a valid AIzaSy... Gemini key is configured, synthesize full scorecard & analysis with Gemini
+      if (GEMINI_API_KEY && GEMINI_API_KEY.startsWith("AIza")) {
+        try {
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                tools: [{ google_search: {} }],
+                contents: [{
+                  parts: [{
+                    text: `You are Nexus AI's Live Sports Analyst. Date: ${new Date().toDateString()}.\nGive exact live scores, wickets, overs, batting/bowling stats, and match status.\n\nRender Live Cricket Feed:\n${renderMatches.join("\n")}\n\nWeb Sports Context:\n${webSnippets}\n\nUser Question: ${userPrompt}`
+                  }]
+                }]
+              })
+            }
+          );
+
+          if (geminiRes.ok) {
+            const gData = await geminiRes.json();
+            const gText = gData?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("\n");
+            if (gText) {
+              return {
+                engine: "Gemini Sports AI + Render Cricket API",
+                isSports: true,
+                text: gText,
+                sources: webSources
+              };
+            }
+          }
+        } catch (e) {
+          console.warn("Gemini fallback triggered:", e);
+        }
+      }
+
+      // Step D: Direct Live Render Cricket-API + LangSearch Sports Response (works even without Gemini key)
+      let output = "";
+      if (renderMatches.length > 0) {
+        output += "**Live Cricket Matches (Render API Feed):**\n" + renderMatches.map(m => `• ${m}`).join("\n") + "\n\n";
+      }
+      if (webSnippets) {
+        output += "**Latest Match Updates & Scorecards:**\n" + webSnippets;
+      }
+      if (!output) {
+        output = "No live matches found right now. Try asking about a specific team or tournament.";
+      }
 
       return {
-        engine: "Gemini 2.5 Sports Grounding + Cricket API",
+        engine: "Live Sports Engine (Render Cricket API + LangSearch)",
         isSports: true,
-        text: answerText,
-        sources
+        text: output,
+        sources: webSources
       };
     }
 
-    // 3. Non-Sports Handler -> Uses LangSearch API (0 Gemini API calls used)
-    async function fetchGeneralWithLangSearch(userPrompt) {
-      const keys = getKeys();
+    // 3. General Web & Code Handler -> Uses LangSearch API ONLY (0 Gemini calls)
+    async function handleGeneralQuery(userPrompt) {
       const freshness = document.getElementById("timeFilter").value;
-
-      if (!keys.langsearch || keys.langsearch === "YOUR_LANGSEARCH_API_KEY") {
-        return {
-          engine: "LangSearch Web Search",
-          isSports: false,
-          text: "⚠️ Please click **⚙️ API Keys** in the top bar and paste your **LangSearch API Key** to enable general web search (your Gemini key is reserved strictly for sports queries).",
-          sources: []
-        };
-      }
 
       const res = await fetch("https://api.langsearch.com/v1/web-search", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${keys.langsearch}`,
+          "Authorization": `Bearer ${LANGSEARCH_API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -530,29 +482,26 @@ ${renderLiveFeed}`;
       }
 
       return {
-        engine: "LangSearch Web Intelligence (Gemini Saved)",
+        engine: "LangSearch Web Intelligence",
         isSports: false,
         text: formatted,
         sources
       };
     }
 
-    // Markdown-lite formatter
     function formatMarkdown(text) {
       let html = text
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
-
       html = html.replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
       html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
       html = html.replace(/\n/g, "<br>");
       return html;
     }
 
-    // Chat State Management
     function saveChats() {
-      localStorage.setItem("nexus_chats_v2", JSON.stringify(chats));
+      localStorage.setItem("nexus_chats_v3", JSON.stringify(chats));
       renderSidebar();
     }
 
@@ -602,8 +551,7 @@ ${renderLiveFeed}`;
         box.innerHTML = `
           <div class="msg ai">
             <strong>Welcome to Nexus AI</strong><br>
-            • <strong>Sports Queries</strong> (Cricket, Football, Live Scores, Scorecards) automatically use your <strong>Gemini API Key + Render Cricket API</strong>.<br>
-            • <strong>General Web & Code Queries</strong> use <strong>LangSearch</strong> so your Gemini free tier is preserved strictly for sports.
+            Ask about <strong>live cricket scores, wickets, overs, football matches</strong>, or any general web topic.
           </div>`;
         return;
       }
@@ -652,7 +600,7 @@ ${renderLiveFeed}`;
       active.messages.push({
         role: "ai",
         isSports: sportsMode,
-        engine: sportsMode ? "Fetching Live Sports via Gemini..." : "Searching Web via LangSearch...",
+        engine: sportsMode ? "Fetching Live Sports..." : "Searching Web...",
         text: "⏳ Loading real-time results...",
         sources: []
       });
@@ -660,8 +608,8 @@ ${renderLiveFeed}`;
 
       try {
         const result = sportsMode
-          ? await fetchSportsWithGemini(promptText)
-          : await fetchGeneralWithLangSearch(promptText);
+          ? await handleSportsQuery(promptText)
+          : await handleGeneralQuery(promptText);
 
         active.messages[active.messages.length - 1] = {
           role: "ai",
