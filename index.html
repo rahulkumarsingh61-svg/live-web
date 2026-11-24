@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Nexus AI — Live Web, Code & Sports Intelligence</title>
+  <title>Nexus AI — Live Web, Code & Full Sports Scorecards</title>
   <style>
     :root {
       --bg: #070b14;
@@ -678,7 +678,7 @@
         </div>
       </div>
       <div class="controls">
-        <button id="sportsToggle" class="pill-toggle" title="Force Flashscore Sports Intelligence">🏏 Live Sports</button>
+        <button id="sportsToggle" class="pill-toggle" title="Force Flashscore + Cricbuzz/Cricinfo Live Sports">🏏 Live Sports</button>
         <select id="sportSelect" title="Select Specific Sport">
           <option value="auto" selected>Auto Sport</option>
           <option value="cricket">Cricket</option>
@@ -701,7 +701,7 @@
 
     <div class="input-area">
       <form class="input-box" id="chatForm">
-        <input type="text" id="promptInput" placeholder="Ask about scores, scorecards, lineups, standings, code, or the web..." autocomplete="off" required />
+        <input type="text" id="promptInput" placeholder="Ask about scores, wickets, overs, runs needed, lineups, code, or the web..." autocomplete="off" required />
         <button type="button" id="micBtn" title="Voice Input">🎤</button>
         <button type="submit" id="sendBtn">Ask AI</button>
       </form>
@@ -762,7 +762,7 @@
       }
     });
 
-    // Voice Input via Web Speech API
+    // Voice Input
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
@@ -980,11 +980,11 @@
         chat.innerHTML = `
           <div class="welcome" id="welcomeScreen">
             <h1>Ask Anything, Grounded Live</h1>
-            <p>Full <strong>Flashscore Sports Intelligence</strong> (scores, scorecards, lineups, player stats, H2H, odds, standings, squads &amp; news), <strong>Code Generator with Copy Buttons</strong>, and <strong>LangSearch Web AI</strong>.</p>
+            <p>Full <strong>Cricket &amp; Sports Scorecards</strong> (runs, wickets, overs, runs needed, batting/bowling cards, lineups, stats &amp; tables), <strong>Code Generator with Copy Buttons</strong>, and <strong>Live Web AI</strong>.</p>
             <div class="suggestions">
-              <button class="suggestion-btn" onclick="quickAsk('Western Australia vs Tasmania Sheffield Shield full scorecard and details')">🏏 WA vs Tasmania Scorecard</button>
+              <button class="suggestion-btn" onclick="quickAsk('Western Australia vs Tasmania full scorecard, wickets, overs, batting and runs needed')">🏏 WA vs Tasmania Full Scorecard</button>
+              <button class="suggestion-btn" onclick="quickAsk('South Australia vs Victoria live cricket score, wickets, overs and batting details')">🏏 SA vs Victoria Scorecard</button>
               <button class="suggestion-btn" onclick="quickAsk('Premier League standings, top scorers, and upcoming fixtures')">⚽ Premier League Table & Scores</button>
-              <button class="suggestion-btn" onclick="quickAsk('Real Madrid squad, recent results, and upcoming matches')">🏟️ Real Madrid Squad & Fixtures</button>
               <button class="suggestion-btn" onclick="quickAsk('Write a Python script to fetch live cricket scores from an API')">💻 Python API Code Example</button>
             </div>
           </div>
@@ -1107,7 +1107,7 @@
         const srcTitle = document.createElement("div");
         srcTitle.className = "sources-title" + (isSports ? " sports-badge" : "");
         srcTitle.textContent = isSports
-          ? `Flashscore Sports Data (${sources.length})`
+          ? `Live Sports & Scorecard Sources (${sources.length})`
           : `Web Sources (${sources.length})`;
         wrapper.appendChild(srcTitle);
 
@@ -1177,13 +1177,13 @@
 
     function detectSportsQuery(query) {
       if (sportsMode || sportSelect.value !== "auto") return true;
-      return /\b(cricket|football|soccer|ipl|t20|odi|test|score|scores|scorecard|match|matches|fixture|fixtures|standings|points table|table|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|world cup|bbl|psl|bpl|cricbuzz|flashscore|espncricinfo|tennis|atp|wta|rankings|basketball|nba|hockey|nhl|f1|formula 1|kabaddi|pkl|badminton|bwf|golf|ufc|boxing|vs|versus|batting|bowling|wickets|innings|goals|halftime|fulltime|lineup|lineups|stats|statistics|squad|transfer|transfers|injury|injuries|odds|h2h|head to head|commentary|top scorers|ind|nz|aus|eng|pak|sa|sl|ban|wi|afg|virat|rohit|bumrah|messi|ronaldo|mbappe|haaland|real madrid|barcelona|arsenal|liverpool|chelsea|manchester|bayern|psg|sheffield shield|western australia|tasmania|south australia|victoria)\b/i.test(query);
+      return /\b(cricket|football|soccer|ipl|t20|odi|test|score|scores|scorecard|match|matches|fixture|fixtures|standings|points table|table|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|world cup|bbl|psl|bpl|cricbuzz|flashscore|espncricinfo|tennis|atp|wta|rankings|basketball|nba|hockey|nhl|f1|formula 1|kabaddi|pkl|badminton|bwf|golf|ufc|boxing|vs|versus|batting|bowling|wickets|wicket|overs|over|runs|needed|target|trail|lead|innings|goals|halftime|fulltime|lineup|lineups|stats|statistics|squad|transfer|transfers|injury|injuries|odds|h2h|head to head|commentary|top scorers|ind|nz|aus|eng|pak|sa|sl|ban|wi|afg|virat|rohit|bumrah|messi|ronaldo|mbappe|haaland|real madrid|barcelona|arsenal|liverpool|chelsea|manchester|bayern|psg|sheffield shield|western australia|tasmania|south australia|victoria)\b/i.test(query);
     }
 
     function detectSportType(query) {
       if (sportSelect.value !== "auto") return sportSelect.value;
       const q = query.toLowerCase();
-      if (/\b(cricket|ipl|t20|odi|test|sheffield shield|batting|bowling|wickets|innings|cricbuzz|espncricinfo|virat|rohit|bumrah|western australia|tasmania|south australia|victoria)\b/.test(q)) {
+      if (/\b(cricket|ipl|t20|odi|test|sheffield shield|batting|bowling|wickets|wicket|overs|runs|needed|target|innings|cricbuzz|espncricinfo|virat|rohit|bumrah|western australia|tasmania|south australia|victoria)\b/.test(q)) {
         return "cricket";
       }
       if (/\b(football|soccer|premier league|la liga|serie a|bundesliga|champions league|uefa|fifa|goals|halftime|arsenal|liverpool|chelsea|manchester|real madrid|barcelona|bayern|psg|juventus|inter|milan|messi|ronaldo|mbappe|haaland|xg)\b/.test(q)) {
@@ -1214,7 +1214,6 @@
       }
     }
 
-    // FIX 1: Extract Flashscore 8-char ID from ent.id OR from ent.link URL path
     function extractEntityId(ent) {
       if (!ent) return null;
       const directId = ent.id || ent.team_id || ent.player_id || ent.tournament_id || ent.match_id;
@@ -1222,7 +1221,6 @@
 
       if (ent.link) {
         const parts = String(ent.link).split("/").filter(Boolean);
-        // Flashscore URLs end with the 8-char alphanumeric ID (e.g., /team/real-madrid/W8mj7MDD/)
         for (let i = parts.length - 1; i >= 0; i--) {
           if (/^[A-Za-z0-9]{8}$/.test(parts[i])) {
             return parts[i];
@@ -1232,7 +1230,6 @@
       return null;
     }
 
-    // FIX 2: Cleanly strip null/empty values and format JSON into readable lines
     function cleanJsonToReadable(obj, maxLines = 18) {
       if (!obj) return "";
       const lines = [];
@@ -1240,7 +1237,7 @@
       function walk(node, prefix = "") {
         if (lines.length >= maxLines || node === null || node === undefined || node === "") return;
         if (Array.isArray(node)) {
-          node.slice(0, 12).forEach((item, idx) => {
+          node.slice(0, 12).forEach((item) => {
             if (typeof item === "object" && item !== null) {
               const summaryParts = [];
               for (const [k, v] of Object.entries(item)) {
@@ -1277,22 +1274,17 @@
       return lines.join("\n");
     }
 
-    // FIX 3: Score competition importance so major leagues appear first instead of alphabetical countries
     function getCompetitionPriority(compName, searchTerms) {
       const lower = (compName || "").toLowerCase();
       let score = 0;
-
-      // Exact query keyword match gets highest priority
       if (searchTerms.some(t => lower.includes(t.toLowerCase()))) score += 100;
 
-      // Major global leagues & tournaments
       const majorKeywords = [
         "premier league", "champions league", "europa league", "laliga", "la liga",
         "serie a", "bundesliga", "ligue 1", "world cup", "icc", "ipl", "indian premier league",
         "big bash", "sheffield shield", "ashes", "test", "odi", "t20", "nba", "atp", "wta", "grand slam"
       ];
       if (majorKeywords.some(m => lower.includes(m))) score += 40;
-
       return score;
     }
 
@@ -1308,7 +1300,8 @@
         ban: "Bangladesh",
         wi: "West Indies",
         afg: "Afghanistan",
-        wa: "Western Australia"
+        wa: "Western Australia",
+        tas: "Tasmania"
       };
 
       const stop = new Set([
@@ -1318,7 +1311,8 @@
         "table", "points", "h2h", "head", "to", "odds", "commentary", "news", "details", "summary",
         "1st", "2nd", "3rd", "4th", "5th", "test", "odi", "t20", "series", "cricket", "football",
         "tennis", "basketball", "please", "show", "me", "what", "are", "full", "top", "scorers",
-        "profile", "career", "headlines", "rankings", "official"
+        "profile", "career", "headlines", "rankings", "official", "wickets", "wicket", "overs", "over",
+        "runs", "needed", "target", "batting", "bowling", "all", "other", "things"
       ]);
 
       const rawWords = query.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
@@ -1334,7 +1328,6 @@
       return terms;
     }
 
-    // Check available_tabs first and parse match details cleanly without raw JSON or null dumps
     async function enrichMatchById(matchId, userQuery, headers, availableTabs = null) {
       const q = userQuery.toLowerCase();
       const blocks = [];
@@ -1353,12 +1346,12 @@
       const tasks = [];
 
       if (canCall("summary")) {
-        tasks.push(fsGet(`/matches/summary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Match Summary & Scorecard Events", d })));
+        tasks.push(fsGet(`/matches/summary?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Match Summary & Events", d })));
       }
       if (canCall("statistics") && /\b(scorecard|stat|stats|statistics|xg|possession|shots|detail|details)\b/.test(q)) {
         tasks.push(fsGet(`/matches/statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Match Statistics", d })));
       }
-      if (canCall("player_statistics") && /\b(scorecard|player|stat|stats|statistics|batting|bowling)\b/.test(q)) {
+      if (canCall("player_statistics") && /\b(scorecard|player|stat|stats|statistics|batting|bowling|wickets)\b/.test(q)) {
         tasks.push(fsGet(`/matches/player-statistics?match_id=${encodeURIComponent(matchId)}`, headers).then(d => ({ key: "Player Scorecard Stats", d })));
       }
       if (canCall("lineups") && /\b(scorecard|lineup|lineups|xi|playing|squad|starting|bench)\b/.test(q)) {
@@ -1400,6 +1393,7 @@
       const cards = [];
       const contextChunks = [];
       let foundSpecificEntityMatch = false;
+      let hasGranularCricketScorecard = false;
 
       // A. Rankings (ATP / WTA)
       if (/\b(rankings|ranking|atp|wta)\b/.test(q)) {
@@ -1440,12 +1434,11 @@
         }
       }
 
-      // C. Search Teams, Players, or Competitions (strictly filtered by sport & multi-word phrase)
+      // C. Search Teams, Players, or Competitions
       const searchTerms = extractSearchTerms(userQuery);
       let foundMatchesFromSearch = [];
 
       if (searchTerms.length > 0) {
-        // Group consecutive capitalized or non-stop words into a clean entity phrase (e.g., "Premier League", "Real Madrid", "Virat Kohli")
         const searchPhrase = searchTerms.slice(0, 3).join(" ");
         statusEl.querySelector("span").textContent = `Searching Flashscore (${sport}) for "${searchPhrase}"...`;
 
@@ -1454,7 +1447,6 @@
           ? searchRes
           : (searchRes?.results || searchRes?.items || searchRes?.teams || []);
 
-        // Strictly filter out entities from the wrong sport (e.g., block tennis players when sport === "cricket")
         const filteredEntities = rawEntities.filter(ent => {
           const entSport = (ent.sport || ent.sport_name || "").toLowerCase();
           if (entSport && entSport !== sport) return false;
@@ -1516,7 +1508,6 @@
               foundSpecificEntityMatch = true;
             }
           } else {
-            // Team entity
             statusEl.querySelector("span").textContent = `Fetching matches, results & squad for ${entName}...`;
             const wantsSquad = /\b(squad|players|roster|lineup|lineups|xi)\b/.test(q);
             const wantsTable = /\b(standings|table|points)\b/.test(q);
@@ -1571,7 +1562,7 @@
         }
       }
 
-      // D. Live Matches & Today's Matches (Prioritizing Major Leagues & Matching Teams)
+      // D. Live Matches & Today's Matches
       statusEl.querySelector("span").textContent = `Checking live ${sport} scoreboard on Flashscore...`;
       let dayData = await fsGet(`/matches/live?sport=${sport}`, headers);
       let isLiveOnly = true;
@@ -1630,41 +1621,58 @@
         }
       }
 
-      // E. Enrich top relevant match with full scorecard/summary/stats/lineups whenever requested
+      // E. Enrich top relevant match using available_tabs
       const topMatches = combinedMatches.slice(0, 10);
-      const wantsDeepMatch = /\b(scorecard|detail|details|stat|stats|statistics|summary|lineup|lineups|commentary|h2h|odds)\b/.test(q);
-      if (topMatches.length > 0 && topMatches[0].id && (foundSpecificEntityMatch || wantsDeepMatch)) {
+      const wantsDeepScorecard = /\b(scorecard|detail|details|stat|stats|statistics|summary|lineup|lineups|commentary|h2h|odds|wickets|wicket|overs|over|runs|needed|target|batting|bowling)\b/.test(q);
+
+      if (topMatches.length > 0 && topMatches[0].id && (foundSpecificEntityMatch || wantsDeepScorecard)) {
         statusEl.querySelector("span").textContent = `Loading detailed scorecard & stats for ${topMatches[0].name}...`;
         const deepInfo = await enrichMatchById(topMatches[0].id, userQuery, headers, topMatches[0].availableTabs);
-        if (deepInfo) {
+        if (deepInfo && deepInfo.length > 180) {
           topMatches[0].text += `\n${deepInfo}`;
+          hasGranularCricketScorecard = true;
         }
       }
 
       const finalCards = cards.length ? cards.slice(0, 10) : topMatches.slice(0, 10);
       if (topMatches.length) {
         contextChunks.unshift(
-          `**${isLiveOnly ? "Live" : "Today's"} ${sport.toUpperCase()} Matches & Scorecards:**\n\n` +
+          `**${isLiveOnly ? "Live" : "Today's"} ${sport.toUpperCase()} Scoreboard (Flashscore):**\n\n` +
           topMatches.map(m => m.text).join("\n\n")
         );
       }
 
-      // F. Broad Hybrid Sports Web Backup when Flashscore doesn't cover a requested series/league
-      if (searchTerms.length > 0 && !foundSpecificEntityMatch) {
-        statusEl.querySelector("span").textContent = `Searching live sports scorecard & series archives...`;
+      // F. Automatic Full Cricket/Sports Scorecard Enrichment via Cricbuzz & ESPNcricinfo
+      // Triggers whenever:
+      // 1) User asks for wickets, overs, runs needed, batting/bowling, or full scorecard AND Flashscore didn't have ball-by-ball details
+      // 2) Or user asked for a specific team/series that Flashscore didn't return
+      const needsRichScorecardBackup =
+        (sport === "cricket" && wantsDeepScorecard && !hasGranularCricketScorecard) ||
+        (searchTerms.length > 0 && !foundSpecificEntityMatch);
+
+      if (needsRichScorecardBackup) {
+        statusEl.querySelector("span").textContent = `Fetching full wickets, overs, batting & bowling scorecard from Cricbuzz & ESPNcricinfo...`;
         try {
-          const webSports = await searchLangSearch(`${userQuery} scorecard standings stats schedule`, "", null);
+          const targetedQuery = topMatches.length && foundSpecificEntityMatch
+            ? `${topMatches[0].name} full scorecard wickets overs runs needed batting bowling`
+            : `${userQuery} full scorecard wickets overs runs needed batting bowling`;
+
+          const scorecardDomains = sport === "cricket"
+            ? ["cricbuzz.com", "espncricinfo.com", "cricket.com.au", "cricketworld.com", "abc.net.au"]
+            : null;
+
+          const webSports = await searchLangSearch(targetedQuery, "oneWeek", scorecardDomains);
           if (webSports.length) {
-            const webSnippetBlock = webSports.slice(0, 4).map((r, idx) => {
-              const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 1000);
+            const webSnippetBlock = webSports.slice(0, 4).map((r) => {
+              const body = (r.text || r.snippet || "").replace(/\s+/g, " ").trim().slice(0, 1300);
               finalCards.unshift({
                 name: r.name,
-                sub: "Live Sports Web Source",
+                sub: "Live Full Scorecard",
                 url: r.url
               });
               return `• **${r.name}**\n  ${body}`;
             }).join("\n\n");
-            contextChunks.unshift(`**Live Sports Web Report:**\n\n${webSnippetBlock}`);
+            contextChunks.unshift(`**Full Live Scorecard, Wickets, Overs & Batting/Bowling Details:**\n\n${webSnippetBlock}`);
           }
         } catch (_) {}
       }
@@ -1681,7 +1689,7 @@
         query,
         count: 6,
         contents: {
-          text: { max_characters: 2800 }
+          text: { max_characters: 3000 }
         }
       };
 
@@ -1726,7 +1734,11 @@
       }
 
       const systemPrompt = isSports
-        ? "You are Nexus AI, a complete sports intelligence assistant. Answer thoroughly using ONLY the provided Flashscore & live sports data. Include exact scores, innings/period breakdowns, match status, local start times, full batting/bowling or match statistics, lineups, standings, H2H, odds, or news as requested. Use clean bullet points and **bold** headings. Never cut off mid-sentence."
+        ? "You are Nexus AI, an expert live sports & cricket scorecard analyst. Using ONLY the provided Flashscore & live scorecard data, present a complete, crystal-clear scorecard breakdown including:\n" +
+          "1. **Match Summary & Status** (exact runs, wickets fallen, overs bowled, lead/trail, target & runs needed to win, current day/session).\n" +
+          "2. **Batting & Bowling Highlights** (top batters with runs/balls, top bowlers with wickets/overs, and fall of wickets if present in the data).\n" +
+          "3. **Other Active Matches / Standings / Stats** if provided.\n" +
+          "Use clean bullet points and **bold** headings. Never cut off mid-sentence."
         : "You are Nexus AI, a live web search & coding assistant. Answer clearly and completely using the provided live search results (and your coding knowledge when asked to write code). Wrap all code snippets in triple backticks ```language so the user gets a copy button. Use clean bullet points and **bold** highlights.";
 
       const historyMessages = recentHistory.slice(-4).map(m => ({
@@ -1746,7 +1758,7 @@
             messages: [
               { role: "system", content: systemPrompt },
               ...historyMessages,
-              { role: "user", content: `Question: ${userQuery}\n\nData:\n${context.slice(0, 6000)}` }
+              { role: "user", content: `Question: ${userQuery}\n\nData:\n${context.slice(0, 6500)}` }
             ]
           })
         });
@@ -1762,7 +1774,7 @@
       try {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 14000);
-        const shortPrompt = `${systemPrompt}\n\nQuestion: ${userQuery}\n\nData:\n${context.slice(0, 2200)}`;
+        const shortPrompt = `${systemPrompt}\n\nQuestion: ${userQuery}\n\nData:\n${context.slice(0, 2400)}`;
         const getRes = await fetch(`[https://text.pollinations.ai/$](https://text.pollinations.ai/$){encodeURIComponent(shortPrompt)}`, {
           signal: controller.signal
         });
@@ -1773,9 +1785,8 @@
         }
       } catch (_) {}
 
-      // Clean pre-formatted fallback (already stripped of null/raw JSON)
       if (isSports) {
-        return context.slice(0, 4200);
+        return context.slice(0, 4500);
       }
 
       return `**Live Web Results for "${userQuery}":**\n\n` +
@@ -1809,7 +1820,7 @@
       await appendMessageElement("user", query, [], false);
 
       if (/^(hi|hello|hey|namaste|good morning|good evening|who are you|what is your name)[!?. ]*$/i.test(query)) {
-        const greetingReply = "Hello! I'm **Nexus AI**. Ask me anything about **live scores, full scorecards, lineups, standings, player stats, or fixtures** (powered by Flashscore), ask me to **write code** (with one-click copy buttons), or ask any **real-time web question** (powered by LangSearch).";
+        const greetingReply = "Hello! I'm **Nexus AI**. Ask me anything about **live scores, wickets, overs, runs needed, full scorecards, lineups, standings, or fixtures** (powered by Flashscore + Cricbuzz/ESPNcricinfo), ask me to **write code** (with one-click copy buttons), or ask any **real-time web question** (powered by LangSearch).";
         session.messages.push({ role: "ai", text: greetingReply, sources: [], isSports: false });
         saveSessions();
         await appendMessageElement("ai", greetingReply, [], true, false);
@@ -1821,7 +1832,7 @@
       const isSports = detectSportsQuery(query);
       const statusEl = createStatus(
         isSports
-          ? "Connecting to Flashscore Sports API..."
+          ? "Fetching live scores & full scorecard data..."
           : "Searching live web via LangSearch..."
       );
 
@@ -1831,7 +1842,7 @@
 
         if (isSports) {
           const sportsReport = await fetchComprehensiveSportsData(query, statusEl);
-          statusEl.querySelector("span").textContent = "Synthesizing complete sports report...";
+          statusEl.querySelector("span").textContent = "Formatting complete scorecard & match report...";
           answer = await generateGroundedAnswer(query, sportsReport, true, priorHistory);
           slimSources = sportsReport.cards.map(c => ({
             name: c.name,
